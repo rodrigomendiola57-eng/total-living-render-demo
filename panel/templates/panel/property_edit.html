@@ -1,0 +1,258 @@
+{% extends 'panel/base.html' %}
+
+{% block title %}Editar Propiedad{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <div class="page-header">
+        <h1 class="page-title">Editar Propiedad</h1>
+        <a href="{% url 'panel:properties' %}" class="btn-secondary">← Volver</a>
+    </div>
+
+    <form method="post" class="edit-form">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h3 class="section-title">Información Básica</h3>
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label>Título *</label>
+                    <input type="text" name="title" value="{{ property.title }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Propiedad *</label>
+                    <select name="property_type" required>
+                        <option value="casa" {% if property.property_type == 'casa' %}selected{% endif %}>Casa</option>
+                        <option value="departamento" {% if property.property_type == 'departamento' %}selected{% endif %}>Departamento</option>
+                        <option value="terreno" {% if property.property_type == 'terreno' %}selected{% endif %}>Terreno</option>
+                        <option value="local" {% if property.property_type == 'local' %}selected{% endif %}>Local Comercial</option>
+                        <option value="oficina" {% if property.property_type == 'oficina' %}selected{% endif %}>Oficina</option>
+                        <option value="bodega" {% if property.property_type == 'bodega' %}selected{% endif %}>Bodega</option>
+                        <option value="rancho" {% if property.property_type == 'rancho' %}selected{% endif %}>Rancho</option>
+                        <option value="otro" {% if property.property_type == 'otro' %}selected{% endif %}>Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Operación *</label>
+                    <select name="operation_type" required>
+                        <option value="venta" {% if property.operation_type == 'venta' %}selected{% endif %}>Venta</option>
+                        <option value="renta" {% if property.operation_type == 'renta' %}selected{% endif %}>Renta</option>
+                        <option value="venta_renta" {% if property.operation_type == 'venta_renta' %}selected{% endif %}>Venta o Renta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado *</label>
+                    <select name="status" required>
+                        <option value="disponible" {% if property.status == 'disponible' %}selected{% endif %}>Disponible</option>
+                        <option value="vendida" {% if property.status == 'vendida' %}selected{% endif %}>Vendida</option>
+                        <option value="rentada" {% if property.status == 'rentada' %}selected{% endif %}>Rentada</option>
+                        <option value="reservada" {% if property.status == 'reservada' %}selected{% endif %}>Reservada</option>
+                        <option value="no_disponible" {% if property.status == 'no_disponible' %}selected{% endif %}>No Disponible</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Proceso/Etapa *</label>
+                    <select name="process" required>
+                        <option value="en_busqueda" {% if property.process == 'en_busqueda' %}selected{% endif %}>En Búsqueda</option>
+                        <option value="en_negociacion" {% if property.process == 'en_negociacion' %}selected{% endif %}>En Negociación</option>
+                        <option value="en_proceso_legal" {% if property.process == 'en_proceso_legal' %}selected{% endif %}>En Proceso Legal</option>
+                        <option value="en_escrituracion" {% if property.process == 'en_escrituracion' %}selected{% endif %}>En Escrituración</option>
+                        <option value="cerrado" {% if property.process == 'cerrado' %}selected{% endif %}>Cerrado</option>
+                        <option value="cancelado" {% if property.process == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                        <option value="no_aplica" {% if property.process == 'no_aplica' %}selected{% endif %}>No Aplica</option>
+                    </select>
+                </div>
+                <div class="form-group full">
+                    <label>Descripción *</label>
+                    <textarea name="description" rows="4" required>{{ property.description }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_featured" {% if property.is_featured %}checked{% endif %}>
+                        ⭐ Destacada
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_new" {% if property.is_new %}checked{% endif %}>
+                        🆕 Nueva
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">Precio y Ubicación</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Precio (MXN) *</label>
+                    <input type="number" name="price" value="{{ property.price|floatformat:2 }}" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Moneda</label>
+                    <select name="currency">
+                        <option value="MXN" {% if property.currency == 'MXN' %}selected{% endif %}>MXN - Pesos Mexicanos</option>
+                        <option value="USD" {% if property.currency == 'USD' %}selected{% endif %}>USD - Dólares</option>
+                        <option value="EUR" {% if property.currency == 'EUR' %}selected{% endif %}>EUR - Euros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cuota Mantenimiento</label>
+                    <input type="number" name="maintenance_fee" value="{{ property.maintenance_fee|default:'' }}" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group full">
+                    <label>Dirección Completa *</label>
+                    <input type="text" name="address" value="{{ property.address }}" required placeholder="Calle, número, colonia">
+                </div>
+                <div class="form-group">
+                    <label>Ciudad *</label>
+                    <input type="text" name="city" value="{{ property.city }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Estado/Provincia *</label>
+                    <input type="text" name="state" value="{{ property.state }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Código Postal</label>
+                    <input type="text" name="zip_code" value="{{ property.zip_code|default:'' }}" placeholder="00000">
+                </div>
+                <div class="form-group">
+                    <label>País</label>
+                    <input type="text" name="country" value="{{ property.country|default:'México' }}">
+                </div>
+                <div class="form-group full">
+                    <label>Link de Google Maps</label>
+                    <input type="url" name="google_maps_url" value="{{ property.google_maps_url|default:'' }}" placeholder="https://maps.google.com/...">
+                    <small>Pegue el enlace de Google Maps de la ubicación exacta</small>
+                </div>
+                <div class="form-group">
+                    <label>Latitud</label>
+                    <input type="number" name="latitude" value="{{ property.latitude|default:'' }}" step="0.000001" placeholder="0.000000">
+                </div>
+                <div class="form-group">
+                    <label>Longitud</label>
+                    <input type="number" name="longitude" value="{{ property.longitude|default:'' }}" step="0.000001" placeholder="0.000000">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">Características Principales</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Recámaras</label>
+                    <input type="number" name="bedrooms" value="{{ property.bedrooms|default:0 }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Baños Completos</label>
+                    <input type="number" name="bathrooms" value="{{ property.bathrooms|default:0 }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Medios Baños</label>
+                    <input type="number" name="half_bathrooms" value="{{ property.half_bathrooms|default:0 }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Estacionamientos</label>
+                    <input type="number" name="parking_spaces" value="{{ property.parking_spaces|default:0 }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Área Total (m²) *</label>
+                    <input type="number" name="area" value="{{ property.area|default:0 }}" step="0.01" min="0" required>
+                    <small>Área total de la propiedad</small>
+                </div>
+                <div class="form-group">
+                    <label>Área Construcción (m²)</label>
+                    <input type="number" name="construction_area" value="{{ property.construction_area|default:0 }}" step="0.01" min="0" placeholder="0.00">
+                    <small>Área construida</small>
+                </div>
+                <div class="form-group">
+                    <label>Área Terreno (m²)</label>
+                    <input type="number" name="lot_area" value="{{ property.lot_area|default:0 }}" step="0.01" min="0" placeholder="0.00">
+                    <small>Área del terreno</small>
+                </div>
+                <div class="form-group">
+                    <label>Niveles/Pisos</label>
+                    <input type="number" name="floors" value="{{ property.floors|default:1 }}" min="1">
+                    <small>Número de niveles</small>
+                </div>
+                <div class="form-group">
+                    <label>Medida Frente (m)</label>
+                    <input type="number" name="front_measure" value="{{ property.front_measure|default:'' }}" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Medida Fondo (m)</label>
+                    <input type="number" name="back_measure" value="{{ property.back_measure|default:'' }}" step="0.01" min="0" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Año Construcción</label>
+                    <input type="number" name="year_built" value="{{ property.year_built|default:'' }}" min="1900" max="2030" placeholder="2020">
+                </div>
+                <div class="form-group">
+                    <label>Ambientes</label>
+                    <input type="number" name="rooms" value="{{ property.rooms|default:0 }}" min="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">Distribución Interior</h3>
+            <div class="checkbox-grid">
+                <label><input type="checkbox" name="has_sala" {% if property.has_sala %}checked{% endif %}> Sala</label>
+                <label><input type="checkbox" name="has_comedor" {% if property.has_comedor %}checked{% endif %}> Comedor</label>
+                <label><input type="checkbox" name="has_cocina" {% if property.has_cocina %}checked{% endif %}> Cocina Integral</label>
+                <label><input type="checkbox" name="has_estudio" {% if property.has_estudio %}checked{% endif %}> Estudio</label>
+                <label><input type="checkbox" name="has_despensa" {% if property.has_despensa %}checked{% endif %}> Despensa</label>
+                <label><input type="checkbox" name="has_cuarto_tv" {% if property.has_cuarto_tv %}checked{% endif %}> Cuarto TV</label>
+                <label><input type="checkbox" name="has_gimnasio" {% if property.has_gimnasio %}checked{% endif %}> Gimnasio</label>
+                <label><input type="checkbox" name="has_balcon" {% if property.has_balcon %}checked{% endif %}> Balcón</label>
+                <label><input type="checkbox" name="has_jardin" {% if property.has_jardin %}checked{% endif %}> Jardín</label>
+                <label><input type="checkbox" name="has_patio" {% if property.has_patio %}checked{% endif %}> Patio</label>
+                <label><input type="checkbox" name="has_roof_garden" {% if property.has_roof_garden %}checked{% endif %}> Roof Garden</label>
+                <label><input type="checkbox" name="has_area_lavado" {% if property.has_area_lavado %}checked{% endif %}> Área Lavado</label>
+                <label><input type="checkbox" name="has_bodega" {% if property.has_bodega %}checked{% endif %}> Bodega</label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">Amenidades del Conjunto</h3>
+            <div class="checkbox-grid">
+                <label><input type="checkbox" name="amenity_salon" {% if property.amenity_salon %}checked{% endif %}> Salón Eventos</label>
+                <label><input type="checkbox" name="amenity_vigilancia" {% if property.amenity_vigilancia %}checked{% endif %}> Vigilancia 24/7</label>
+                <label><input type="checkbox" name="amenity_acceso" {% if property.amenity_acceso %}checked{% endif %}> Acceso Controlado</label>
+                <label><input type="checkbox" name="amenity_areas_verdes" {% if property.amenity_areas_verdes %}checked{% endif %}> Áreas Verdes</label>
+                <label><input type="checkbox" name="amenity_juegos" {% if property.amenity_juegos %}checked{% endif %}> Juegos Infantiles</label>
+                <label><input type="checkbox" name="amenity_gimnasio" {% if property.amenity_gimnasio %}checked{% endif %}> Gimnasio</label>
+                <label><input type="checkbox" name="amenity_alberca" {% if property.amenity_alberca %}checked{% endif %}> Alberca</label>
+                <label><input type="checkbox" name="amenity_cancha_futbol" {% if property.amenity_cancha_futbol %}checked{% endif %}> Cancha Fútbol</label>
+                <label><input type="checkbox" name="amenity_cancha_tenis" {% if property.amenity_cancha_tenis %}checked{% endif %}> Cancha Tenis</label>
+                <label><input type="checkbox" name="amenity_cancha_basket" {% if property.amenity_cancha_basket %}checked{% endif %}> Cancha Basketball</label>
+                <label><input type="checkbox" name="amenity_asadores" {% if property.amenity_asadores %}checked{% endif %}> Zona Asadores</label>
+                <label><input type="checkbox" name="amenity_pet_friendly" {% if property.amenity_pet_friendly %}checked{% endif %}> Pet Friendly</label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">Servicios Disponibles</h3>
+            <div class="checkbox-grid">
+                <label><input type="checkbox" name="service_agua" {% if property.service_agua %}checked{% endif %}> Agua</label>
+                <label><input type="checkbox" name="service_drenaje" {% if property.service_drenaje %}checked{% endif %}> Drenaje</label>
+                <label><input type="checkbox" name="service_luz" {% if property.service_luz %}checked{% endif %}> Luz</label>
+                <label><input type="checkbox" name="service_gas" {% if property.service_gas %}checked{% endif %}> Gas Estacionario</label>
+                <label><input type="checkbox" name="service_internet" {% if property.service_internet %}checked{% endif %}> Internet</label>
+                <label><input type="checkbox" name="service_fibra" {% if property.service_fibra %}checked{% endif %}> Fibra Óptica</label>
+                <label><input type="checkbox" name="service_cable" {% if property.service_cable %}checked{% endif %}> TV Cable</label>
+                <label><input type="checkbox" name="service_telefono" {% if property.service_telefono %}checked{% endif %}> Línea Telefónica</label>
+                <label><input type="checkbox" name="service_cisterna" {% if property.service_cisterna %}checked{% endif %}> Cisterna</label>
+                <label><input type="checkbox" name="service_hidroneumatico" {% if property.service_hidroneumatico %}checked{% endif %}> Hidroneumático</label>
+                <label><input type="checkbox" name="service_aire" {% if property.service_aire %}checked{% endif %}> Aire Acondicionado</label>
+                <label><input type="checkbox" name="service_boiler" {% if property.service_boiler %}checked{% endif %}> Boiler</label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'panel:properties' %}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">Guardar Cambios</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends 'panel/base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Imágenes - {{ development.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .image-gallery-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid transparent;
+    }
+    
+    .image-gallery-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-color: #40452E;
+    }
+    
+    .badge-main-image {
+        background: linear-gradient(135deg, #D6B585 0%, #C4A572 100%);
+        color: #38382E;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-image-action {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-set-main {
+        background: linear-gradient(135deg, #D6B585 0%, #C4A572 100%);
+        color: #38382E;
+        border-color: #D6B585;
+    }
+    
+    .btn-set-main:hover {
+        background: linear-gradient(135deg, #C4A572 0%, #B8965F 100%);
+        color: #38382E;
+        border-color: #C4A572;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(214, 181, 133, 0.4);
+    }
+    
+    .btn-delete-img {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: #ffffff;
+        border-color: #dc3545;
+    }
+    
+    .btn-delete-img:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        color: #ffffff;
+        border-color: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+    
+    .btn-upload-images {
+        background: linear-gradient(135deg, #40452E 0%, #38382E 100%);
+        color: #F2ECE0;
+        border-color: #40452E;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 8px;
+    }
+    
+    .btn-upload-images:hover {
+        background: linear-gradient(135deg, #38382E 0%, #2d2d25 100%);
+        color: #F2ECE0;
+        border-color: #38382E;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi bi-images"></i> Gestionar Imágenes del Carrusel
+        </h1>
+        <div>
+            <a href="{% url 'developments:panel_edit' development.pk %}" class="btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver al Desarrollo
+            </a>
+            <a href="{% url 'developments:panel_list' %}" class="btn-secondary">
+                <i class="bi bi-list"></i> Lista de Desarrollos
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del Desarrollo -->
+    <div class="form-section">
+        <h2 class="section-title">{{ development.name }}</h2>
+        <p class="text-muted mb-0">
+            <i class="bi bi-geo-alt"></i> {{ development.location }}, {{ development.city }}, {{ development.state }}
+        </p>
+    </div>
+
+    <!-- Subir Nuevas Imágenes -->
+    <div class="form-section">
+        <h2 class="section-title">
+            <i class="bi bi-cloud-upload"></i> Subir Nuevas Imágenes
+        </h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="upload">
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label for="images">Seleccionar Imágenes (Múltiples)</label>
+                    <input type="file" id="images" name="images" class="form-control form-control-lg" multiple accept="image/*" required>
+                    <small class="text-muted">Puedes seleccionar múltiples imágenes usando Ctrl+Click (Windows) o Cmd+Click (Mac). La primera imagen será establecida como principal automáticamente.</small>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-upload-images">
+                    <i class="bi bi-upload"></i> Subir Imágenes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Galería de Imágenes -->
+    {% if images %}
+    <div class="form-section">
+        <h2 class="section-title">
+            <i class="bi bi-collection"></i> Imágenes del Carrusel ({{ images.count }})
+        </h2>
+        <p class="text-muted mb-4">
+            <i class="bi bi-info-circle"></i> Las imágenes se muestran en el orden en que aparecen. La imagen principal será la que se muestre primero en el carrusel.
+        </p>
+        
+        <div class="row g-4">
+            {% for image in images %}
+            <div class="col-md-4">
+                <div class="card image-gallery-card shadow-sm h-100">
+                    <img src="{{ image.image.url }}" class="card-img-top" alt="Imagen {{ forloop.counter }}" style="height: 300px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-3">
+                            {% if image.is_main %}
+                            <span class="badge-main-image">
+                                <i class="bi bi-star-fill"></i> IMAGEN PRINCIPAL
+                            </span>
+                            {% else %}
+                            <form method="post" class="mb-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="set_main">
+                                <input type="hidden" name="image_id" value="{{ image.id }}">
+                                <button type="submit" class="btn-image-action btn-set-main w-100">
+                                    <i class="bi bi-star"></i> Establecer como Principal
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        
+                        <form method="post" class="mt-auto" onsubmit="return confirm('¿Estás seguro de eliminar esta imagen? Esta acción no se puede deshacer.');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="image_id" value="{{ image.id }}">
+                            <button type="submit" class="btn-image-action btn-delete-img w-100">
+                                <i class="bi bi-trash"></i> Eliminar Imagen
+                            </button>
+                        </form>
+                        
+                        <p class="text-muted small text-center mb-0 mt-2">
+                            Orden: {{ image.order|default:forloop.counter }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="form-section text-center py-5">
+        <i class="bi bi-images" style="font-size: 5rem; color: #ddd;"></i>
+        <h3 class="mt-3" style="color: #999; font-family: 'Montserrat', sans-serif;">No hay imágenes en el carrusel</h3>
+        <p class="text-muted mt-2">Sube imágenes usando el formulario de arriba para que aparezcan en el carrusel</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

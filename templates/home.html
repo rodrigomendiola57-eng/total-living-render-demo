@@ -1,0 +1,1091 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Total Living - Encuentra tu Propiedad Ideal{% endblock %}
+
+{% load humanize %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<style>
+.hero-carousel {
+    height: calc(100vh - 120px);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-carousel .carousel-item {
+    height: calc(100vh - 120px);
+}
+
+.hero-carousel .carousel-item img {
+    height: calc(100vh - 120px);
+    object-fit: cover;
+    width: 100%;
+    /* Optimización de renderizado de imágenes */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: high-quality;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: opacity;
+    min-width: 100%;
+    min-height: 100%;
+    /* Suavizado de imagen */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%);
+    padding: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+}
+
+/* Título del carrusel - Glassmorphism Transparente FIJO */
+.hero-carousel-section {
+    position: relative;
+}
+
+.carousel-header {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(64, 69, 46, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 20px 60px;
+    border-radius: 50px;
+    border: 2px solid rgba(196, 165, 114, 0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    pointer-events: none;
+}
+
+.carousel-header:hover {
+    background: rgba(64, 69, 46, 0.35);
+    border-color: rgba(196, 165, 114, 0.5);
+    transform: translateX(-50%) translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.carousel-header h2 {
+    font-size: 1.7rem;
+    font-weight: 400;
+    color: white;
+    letter-spacing: 3px;
+    margin: 0;
+    text-transform: uppercase;
+    text-shadow: 0 2px 15px rgba(0,0,0,0.4);
+    font-family: 'Montserrat', sans-serif;
+}
+
+.carousel-content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    padding: 60px 0 80px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 80px;
+    opacity: 1;
+    z-index: 4;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(59, 62, 42, 0.9);
+    border-radius: 50%;
+    padding: 10px;
+}
+
+.carousel-indicators {
+    z-index: 4;
+    margin-bottom: 20px;
+}
+
+.carousel-indicators button {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin: 0 8px;
+    background-color: rgba(255,255,255,0.5);
+}
+
+.carousel-indicators button.active {
+    background-color: var(--matte-gold);
+}
+
+.property-badge-carousel {
+    display: none;
+}
+
+/* Carrusel de Últimas Propiedades - Estilo C21 */
+.latest-properties-section {
+    padding: 80px 0;
+    background: #ffffff;
+}
+
+.latest-properties-title {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.latest-properties-title h2 {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #3d3526;
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+}
+
+.latest-properties-title::after {
+    content: '';
+    display: block;
+    width: 100px;
+    height: 2px;
+    background: #3d3526;
+    margin: 15px auto 0;
+}
+
+.properties-carousel-container {
+    position: relative;
+    padding: 0 60px;
+}
+
+.properties-swiper {
+    padding: 20px 0 40px;
+}
+
+.property-carousel-card {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.property-carousel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+}
+
+.property-carousel-image-container {
+    position: relative;
+    width: 100%;
+    height: 450px;
+    overflow: hidden;
+}
+
+.property-carousel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    /* Optimización de renderizado de imágenes */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: high-quality;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+    /* Suavizado de imagen */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.property-carousel-card:hover .property-carousel-image {
+    transform: scale(1.1);
+}
+
+.property-price-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(30, 40, 60, 0.95);
+    color: white;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    z-index: 2;
+}
+
+.property-name-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+    padding: 40px 25px 25px;
+    z-index: 2;
+}
+
+.property-name-overlay h3 {
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: #FFFFFF;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 1px;
+    line-height: 1.3;
+}
+
+.property-carousel-info {
+    padding: 25px;
+}
+
+.property-location-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.property-location-info i {
+    color: #40452E;
+    font-size: 1rem;
+}
+
+.property-details-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.property-details-info span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.property-carousel-button {
+    background: #C4A572;
+    color: #38382E;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.property-carousel-button:hover {
+    background: #D6B585;
+    color: #38382E;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(196, 165, 114, 0.3);
+    text-decoration: none;
+}
+
+/* Navegación del Carrusel */
+.properties-swiper .swiper-button-next,
+.properties-swiper .swiper-button-prev {
+    background: rgba(61, 53, 38, 0.9);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.properties-swiper .swiper-button-next:hover,
+.properties-swiper .swiper-button-prev:hover {
+    background: rgba(61, 53, 38, 1);
+    transform: scale(1.1);
+}
+
+.properties-swiper .swiper-button-next:after,
+.properties-swiper .swiper-button-prev:after {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.properties-swiper .swiper-button-prev {
+    left: 0;
+}
+
+.properties-swiper .swiper-button-next {
+    right: 0;
+}
+
+/* Tablets */
+@media (max-width: 991.98px) {
+    .hero-carousel,
+    .hero-carousel .carousel-item,
+    .hero-carousel .carousel-item img {
+        height: 60vh;
+        min-height: 400px;
+    }
+    
+    .carousel-header {
+        top: 130px;
+        padding: 16px 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: 90%;
+        z-index: 10 !important;
+    }
+    
+    .carousel-header h2 {
+        font-size: 1.3rem;
+        letter-spacing: 2px;
+    }
+    
+    .carousel-content {
+        padding: 40px 20px;
+    }
+    
+    .properties-carousel-container {
+        padding: 0 20px;
+    }
+}
+
+/* Móviles */
+@media (max-width: 768px) {
+    .hero-carousel,
+    .hero-carousel .carousel-item,
+    .hero-carousel .carousel-item img {
+        height: 100vh;
+        min-height: 100vh;
+        max-height: 100vh;
+    }
+    
+    .carousel-overlay {
+        padding: 0;
+        justify-content: flex-start;
+        padding-top: 70px;
+    }
+    
+    .carousel-header {
+        top: 15px;
+        padding: 8px 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: calc(100% - 40px);
+        border-radius: 20px;
+        z-index: 10 !important;
+    }
+    
+    .carousel-header h2 {
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    
+    .carousel-content {
+        padding: 25px 20px !important;
+        margin-top: auto;
+    }
+    
+    .carousel-content .row {
+        margin: 0;
+        gap: 20px;
+    }
+    
+    .carousel-content .col-lg-8,
+    .carousel-content .col-lg-4 {
+        padding: 0;
+        margin-bottom: 0;
+    }
+    
+    .carousel-content .badge {
+        font-size: 0.7rem !important;
+        padding: 6px 14px !important;
+        margin-bottom: 12px !important;
+        display: inline-block;
+        margin-right: 6px !important;
+    }
+    
+    .carousel-content h2 {
+        font-size: 1.4rem !important;
+        line-height: 1.3;
+        margin-bottom: 12px !important;
+        font-weight: 600 !important;
+    }
+    
+    .carousel-content p {
+        font-size: 0.85rem !important;
+        line-height: 1.6;
+        margin-bottom: 15px !important;
+        opacity: 0.95;
+    }
+    
+    .carousel-content .d-flex.gap-4 {
+        gap: 12px !important;
+        flex-wrap: wrap;
+        margin-bottom: 15px !important;
+    }
+    
+    .carousel-content .d-flex.gap-4 span {
+        font-size: 0.8rem !important;
+        background: rgba(255,255,255,0.15);
+        padding: 6px 12px;
+        border-radius: 8px;
+    }
+    
+    .carousel-content .display-4 {
+        font-size: 2rem !important;
+        line-height: 1.2;
+        margin-bottom: 15px !important;
+        font-weight: 700 !important;
+    }
+    
+    .carousel-content .btn-lg {
+        padding: 14px 24px !important;
+        font-size: 0.95rem !important;
+        width: 100%;
+        font-weight: 600 !important;
+    }
+    
+    .carousel-content .col-lg-4 {
+        text-align: center !important;
+        margin-top: 20px;
+    }
+    
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 50px;
+    }
+    
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .carousel-indicators {
+        margin-bottom: 10px;
+    }
+    
+    .carousel-indicators button {
+        width: 10px;
+        height: 10px;
+        margin: 0 5px;
+    }
+    
+    .properties-carousel-container {
+        padding: 0 15px;
+    }
+    
+    .property-carousel-image-container {
+        height: 300px;
+    }
+    
+    .property-name-overlay {
+        padding: 30px 15px 15px;
+    }
+    
+    .property-name-overlay h3 {
+        font-size: 1.2rem;
+        line-height: 1.3;
+    }
+    
+    .property-price-banner {
+        padding: 10px 15px;
+        font-size: 1rem;
+    }
+    
+    .property-carousel-info {
+        padding: 20px 15px;
+    }
+    
+    .latest-properties-section {
+        padding: 50px 0;
+    }
+    
+    .latest-properties-title h2 {
+        font-size: 1.5rem;
+        letter-spacing: 2px;
+    }
+    
+    /* Buscador responsive */
+    .search-section {
+        min-height: auto !important;
+        padding: 40px 0 !important;
+    }
+    
+    .search-section .display-4 {
+        font-size: 1.5rem !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .search-section .card {
+        margin: 0 15px;
+    }
+    
+    .search-section .card-body {
+        padding: 20px !important;
+    }
+    
+    .search-section .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+    
+    .search-section .form-select,
+    .search-section .form-control {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+    }
+    
+    .search-section .row.g-4 > div {
+        margin-bottom: 15px;
+    }
+    
+    .search-section .btn-lg {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .hero-carousel,
+    .hero-carousel .carousel-item,
+    .hero-carousel .carousel-item img {
+        height: 100vh;
+        min-height: 100vh;
+    }
+    
+    .carousel-overlay {
+        padding: 0;
+        padding-top: 65px;
+    }
+    
+    .carousel-header {
+        top: 12px;
+        padding: 6px 16px;
+        max-width: calc(100% - 30px);
+        border-radius: 18px;
+        z-index: 10 !important;
+    }
+    
+    .carousel-header h2 {
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+    }
+    
+    .carousel-content {
+        padding: 20px 15px !important;
+    }
+    
+    .carousel-content .col-lg-8,
+    .carousel-content .col-lg-4 {
+        padding: 0;
+    }
+    
+    .carousel-content .badge {
+        font-size: 0.65rem !important;
+        padding: 5px 12px !important;
+    }
+    
+    .carousel-content h2 {
+        font-size: 1.2rem !important;
+        margin-bottom: 10px !important;
+        font-weight: 600 !important;
+    }
+    
+    .carousel-content p {
+        font-size: 0.8rem !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .carousel-content .d-flex.gap-4 {
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .carousel-content .d-flex.gap-4 span {
+        font-size: 0.75rem !important;
+        background: rgba(255,255,255,0.15);
+        padding: 5px 10px;
+        border-radius: 6px;
+    }
+    
+    .carousel-content .display-4 {
+        font-size: 1.7rem !important;
+        font-weight: 700 !important;
+    }
+    
+    .carousel-content .btn-lg {
+        padding: 12px 20px !important;
+        font-size: 0.9rem !important;
+        width: 100%;
+        font-weight: 600 !important;
+    }
+    
+    .carousel-content .col-lg-4 {
+        text-align: center !important;
+        margin-top: 18px;
+    }
+    
+    .carousel-content .col-lg-4 .display-4 {
+        font-size: 1.5rem !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .property-carousel-image-container {
+        height: 250px;
+    }
+    
+    .property-name-overlay {
+        padding: 20px 10px 10px;
+    }
+    
+    .property-name-overlay h3 {
+        font-size: 1rem;
+    }
+    
+    .property-price-banner {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Carrusel Grande de Propiedades Destacadas -->
+{% if featured_properties %}
+<section class="hero-carousel-section">
+    <!-- Título fijo fuera del carrusel -->
+    <div class="carousel-header">
+        <h2>PROPIEDADES DESTACADAS</h2>
+    </div>
+    
+    <div class="container-fluid px-0">
+        <div id="featuredCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
+            <!-- Indicadores -->
+            <div class="carousel-indicators">
+                {% for property in featured_properties %}
+                <button type="button" data-bs-target="#featuredCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                        {% if forloop.first %}class="active" aria-current="true"{% endif %}
+                        aria-label="Slide {{ forloop.counter }}"></button>
+                {% endfor %}
+            </div>
+            
+            <!-- Slides -->
+            <div class="carousel-inner">
+                {% for property in featured_properties %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    {% with main_image=property.get_main_image %}
+                    {% if main_image %}
+                        <img src="{{ main_image.image.url }}" alt="{{ property.title }}" loading="eager" fetchpriority="high">
+                    {% else %}
+                        <div class="bg-secondary d-flex align-items-center justify-content-center" style="height: calc(100vh - 120px);">
+                            <i class="bi bi-building" style="font-size: 8rem; color: #ccc;"></i>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                    
+                    <!-- Badge de Destacado -->
+                    <div class="property-badge-carousel">
+                        <i class="bi bi-star-fill"></i> DESTACADO
+                    </div>
+                    
+                    <!-- Overlay con información -->
+                    <div class="carousel-overlay">
+                        <!-- Contenido de la propiedad -->
+                        <div class="container carousel-content">
+                            <div class="row align-items-end">
+                                <div class="col-lg-8">
+                                    <span class="badge bg-primary mb-3" style="font-size: 1rem; padding: 10px 20px;">
+                                        {{ property.get_property_type_display }}
+                                    </span>
+                                    <span class="badge bg-info mb-3 ms-2" style="font-size: 1rem; padding: 10px 20px;">
+                                        {{ property.get_operation_type_display }}
+                                    </span>
+                                    
+                                    <h2 class="display-5 fw-bold text-white mb-3" style="font-family: 'Montserrat', sans-serif;">{{ property.title }}</h2>
+                                    
+                                    <p class="fs-6 text-white mb-4" style="max-width: 700px; font-family: 'Montserrat', sans-serif;">
+                                        {{ property.description|truncatewords:30 }}
+                                    </p>
+                                    
+                                    <div class="d-flex flex-wrap gap-4 mb-4 text-white" style="font-family: 'Montserrat', sans-serif;">
+                                        {% if property.bedrooms > 0 %}
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-door-open fs-5 me-2"></i>
+                                            <span class="fs-6">{{ property.bedrooms }} Recámaras</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if property.bathrooms > 0 %}
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-droplet fs-5 me-2"></i>
+                                            <span class="fs-6">{{ property.bathrooms }} Baños</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if property.area %}
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-rulers fs-5 me-2"></i>
+                                            <span class="fs-6">{{ property.area }} m²</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center gap-3 mb-3" style="font-family: 'Montserrat', sans-serif;">
+                                        <i class="bi bi-geo-alt-fill text-white fs-5"></i>
+                                        <span class="text-white fs-6">{{ property.city }}, {{ property.state }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-4 text-lg-end">
+                                    <div class="mb-4">
+                                        <div class="display-4 fw-bold" style="color: var(--matte-gold); font-family: 'Montserrat', sans-serif;">
+                                            {{ property.get_price_display }}
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'properties:detail' property.pk %}" class="btn btn-lg px-5 py-3" 
+                                       style="background: var(--matte-gold); color: var(--smoky-black); font-weight: 600; font-size: 1.1rem; font-family: 'Montserrat', sans-serif;">
+                                        <i class="bi bi-eye"></i> Ver Detalles
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Controles -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Buscador de Propiedades -->
+<section class="search-section py-5" style="background: linear-gradient(rgba(59, 62, 42, 0.85), rgba(56, 56, 46, 0.85)), url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1920') center/cover; min-height: 600px; display: flex; align-items: center;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-4 fw-bold text-white mb-3" style="font-family: 'Montserrat', sans-serif;">
+                Encuentra tu Propiedad Ideal
+            </h2>
+        </div>
+        
+        <div class="card shadow-lg border-0" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px);">
+            <div class="card-body p-5">
+                <form method="get" action="{% url 'properties:list' %}">
+                    <div class="row g-4">
+                        <!-- Tipo de Propiedad -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-house-door me-2"></i>Tipo de Propiedad</label>
+                            <select name="tipo" class="form-select form-select-lg">
+                                <option value="">Todos</option>
+                                <option value="casa">Casa</option>
+                                <option value="departamento">Departamento</option>
+                                <option value="terreno">Terreno</option>
+                                <option value="local">Local Comercial</option>
+                                <option value="oficina">Oficina</option>
+                                <option value="bodega">Bodega</option>
+                                <option value="rancho">Rancho</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Operación -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-tag me-2"></i>Operación</label>
+                            <select name="operacion" class="form-select form-select-lg">
+                                <option value="">Todas</option>
+                                <option value="venta">Venta</option>
+                                <option value="renta">Renta</option>
+                                <option value="venta_renta">Venta o Renta</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Estado -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-geo-alt me-2"></i>Estado</label>
+                            <div style="position: relative;">
+                                <input type="text" name="estado" id="estado-input" class="form-control form-control-lg autocomplete-input" placeholder="Ej: Querétaro, Ciudad de México" autocomplete="off">
+                                <div id="estado-suggestions" class="autocomplete-suggestions"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Región/Delegación -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-pin-map me-2"></i>Región/Delegación</label>
+                            <div style="position: relative;">
+                                <input type="text" name="region" id="region-input" class="form-control form-control-lg autocomplete-input" placeholder="Selecciona un estado primero" autocomplete="off" disabled>
+                                <div id="region-suggestions" class="autocomplete-suggestions"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Precio Mínimo -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Precio Mínimo</label>
+                            <input type="number" name="precio_min" class="form-control form-control-lg" placeholder="$0">
+                        </div>
+                        
+                        <!-- Precio Máximo -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Precio Máximo</label>
+                            <input type="number" name="precio_max" class="form-control form-control-lg" placeholder="Sin límite">
+                        </div>
+                        
+                        <!-- Recámaras -->
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold"><i class="bi bi-door-open me-2"></i>Recámaras</label>
+                            <select name="recamaras" class="form-select form-select-lg">
+                                <option value="">Todas</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                                <option value="5">5+</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Baños -->
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold"><i class="bi bi-droplet me-2"></i>Baños</label>
+                            <select name="banos" class="form-select form-select-lg">
+                                <option value="">Todos</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                                <option value="5">5+</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Estacionamientos -->
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold"><i class="bi bi-car-front me-2"></i>Estacionamiento</label>
+                            <select name="estacionamiento" class="form-select form-select-lg">
+                                <option value="">Todos</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Niveles -->
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold"><i class="bi bi-layers me-2"></i>Niveles</label>
+                            <select name="niveles" class="form-select form-select-lg">
+                                <option value="">Todos</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Área Total Mínima -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-rulers me-2"></i>Área Total Mín (m²)</label>
+                            <input type="number" name="area_min" class="form-control form-control-lg" step="0.01" placeholder="0" min="0">
+                        </div>
+                        
+                        <!-- Área Total Máxima -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-rulers me-2"></i>Área Total Máx (m²)</label>
+                            <input type="number" name="area_max" class="form-control form-control-lg" step="0.01" placeholder="Sin límite" min="0">
+                        </div>
+                        
+                        <!-- Año Construcción Mínimo -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-calendar me-2"></i>Año Construcción Mín</label>
+                            <input type="number" name="year_built_min" class="form-control form-control-lg" placeholder="1900" min="1900" max="2100">
+                        </div>
+                        
+                        <!-- Año Construcción Máximo -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-calendar me-2"></i>Año Construcción Máx</label>
+                            <input type="number" name="year_built_max" class="form-control form-control-lg" placeholder="2025" min="1900" max="2100">
+                        </div>
+                        
+                        <!-- Cuota Mantenimiento Máxima -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Cuota Mantenimiento Máx</label>
+                            <input type="number" name="cuota_mantenimiento_max" class="form-control form-control-lg" step="0.01" placeholder="Sin límite" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3" style="font-family: 'Montserrat', sans-serif; font-size: 1.2rem;">
+                                <i class="bi bi-search"></i> Buscar Propiedades
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Últimas Propiedades - Carrusel Estilo C21 -->
+<section class="latest-properties-section">
+    <div class="container">
+        <div class="latest-properties-title">
+            <h2>TOTAL LIVING LISTINGS EXCLUSIVOS</h2>
+        </div>
+        
+        {% if latest_properties %}
+        <div class="properties-carousel-container">
+            <div class="swiper propertiesSwiper">
+                <div class="swiper-wrapper properties-swiper">
+                    {% for property in latest_properties %}
+                    <div class="swiper-slide">
+                        <div class="property-carousel-card">
+                            <div class="property-carousel-image-container">
+                                {% with main_image=property.get_main_image %}
+                                {% if main_image %}
+                                <img src="{{ main_image.image.url }}" alt="{{ property.title }}" class="property-carousel-image" loading="eager" fetchpriority="high">
+                                {% else %}
+                                <div class="property-carousel-image" style="background: linear-gradient(135deg, #40452E 0%, #2d3120 100%); display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-building" style="font-size: 5rem; color: rgba(255,255,255,0.3);"></i>
+                                </div>
+                                {% endif %}
+                                {% endwith %}
+                                
+                                <div class="property-price-banner">
+                                    {{ property.get_price_display }}
+                                </div>
+                                
+                                <div class="property-name-overlay">
+                                    <h3>{{ property.title }}</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="property-carousel-info">
+                                <div class="property-location-info">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>{{ property.city }}, {{ property.state }}</span>
+                                </div>
+                                
+                                <div class="property-details-info">
+                                    {% if property.bedrooms > 0 %}
+                                    <span>
+                                        <i class="bi bi-door-open"></i>
+                                        {{ property.bedrooms }} RE
+                                    </span>
+                                    {% endif %}
+                                    {% if property.bathrooms > 0 %}
+                                    <span>
+                                        <i class="bi bi-droplet"></i>
+                                        {{ property.bathrooms }} BA
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <a href="{% url 'properties:detail' property.pk %}" class="property-carousel-button">
+                                    Más información
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'properties:list' %}" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-grid-3x3-gap"></i> Ver Todas las Propiedades
+            </a>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 5rem; color: #ccc;"></i>
+            <h3 class="mt-3">No hay propiedades disponibles</h3>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+// Auto-play del carrusel con pausa al hover
+document.addEventListener('DOMContentLoaded', function() {
+    var carousel = document.getElementById('featuredCarousel');
+    if (carousel) {
+        var bsCarousel = new bootstrap.Carousel(carousel, {
+            interval: 5000,
+            wrap: true,
+            pause: 'hover'
+        });
+    }
+    
+    // Carrusel de Últimas Propiedades
+    const propertiesSwiper = new Swiper('.propertiesSwiper', {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        breakpoints: {
+            640: {
+                slidesPerView: 2,
+                spaceBetween: 20,
+            },
+            768: {
+                slidesPerView: 2,
+                spaceBetween: 30,
+            },
+            1024: {
+                slidesPerView: 3,
+                spaceBetween: 30,
+            },
+        },
+    });
+});
+</script>
+{% endblock %}

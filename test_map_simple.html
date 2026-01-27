@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Test Mapa Simple</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial; }
+        #map { 
+            width: 100%; 
+            height: 500px; 
+            border: 3px solid red;
+            background: yellow;
+        }
+        .info { 
+            margin: 20px 0; 
+            padding: 10px; 
+            background: #f0f0f0; 
+        }
+    </style>
+</head>
+<body>
+    <h1>TEST DE MAPA - SI VES ESTO EL MAPA FUNCIONA</h1>
+    
+    <div class="info">
+        <p><strong>Latitud:</strong> <span id="lat-display">19.4326</span></p>
+        <p><strong>Longitud:</strong> <span id="lng-display">-99.1332</span></p>
+        <button onclick="saveLocation()" style="padding: 10px 20px; font-size: 16px;">GUARDAR UBICACIÓN</button>
+        <p id="status"></p>
+    </div>
+    
+    <div id="map"></div>
+    
+    <div class="info">
+        <p><strong>Valores guardados:</strong></p>
+        <p>Lat: <input type="text" id="saved-lat" readonly style="width: 200px;"></p>
+        <p>Lng: <input type="text" id="saved-lng" readonly style="width: 200px;"></p>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        console.log('1. Script iniciado');
+        console.log('2. Leaflet disponible:', typeof L);
+        
+        var map, marker;
+        var currentLat = 19.4326;
+        var currentLng = -99.1332;
+        
+        window.onload = function() {
+            console.log('3. Window loaded');
+            
+            try {
+                map = L.map('map').setView([currentLat, currentLng], 13);
+                console.log('4. Mapa creado');
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+                console.log('5. Tiles agregados');
+                
+                marker = L.marker([currentLat, currentLng], {draggable: true}).addTo(map);
+                console.log('6. Marcador agregado');
+                
+                marker.on('dragend', function() {
+                    var pos = marker.getLatLng();
+                    currentLat = pos.lat;
+                    currentLng = pos.lng;
+                    document.getElementById('lat-display').textContent = currentLat.toFixed(6);
+                    document.getElementById('lng-display').textContent = currentLng.toFixed(6);
+                    document.getElementById('status').textContent = 'Ubicación cambiada - presiona GUARDAR';
+                    document.getElementById('status').style.color = 'red';
+                });
+                
+                map.on('click', function(e) {
+                    marker.setLatLng(e.latlng);
+                    currentLat = e.latlng.lat;
+                    currentLng = e.latlng.lng;
+                    document.getElementById('lat-display').textContent = currentLat.toFixed(6);
+                    document.getElementById('lng-display').textContent = currentLng.toFixed(6);
+                    document.getElementById('status').textContent = 'Ubicación cambiada - presiona GUARDAR';
+                    document.getElementById('status').style.color = 'red';
+                });
+                
+                setTimeout(function() {
+                    map.invalidateSize();
+                    console.log('7. Mapa redimensionado');
+                }, 200);
+                
+            } catch(e) {
+                console.error('ERROR:', e);
+                document.getElementById('map').innerHTML = '<h2 style="color:red;">ERROR: ' + e.message + '</h2>';
+            }
+        };
+        
+        function saveLocation() {
+            document.getElementById('saved-lat').value = currentLat.toFixed(6);
+            document.getElementById('saved-lng').value = currentLng.toFixed(6);
+            document.getElementById('status').textContent = 'UBICACIÓN GUARDADA!';
+            document.getElementById('status').style.color = 'green';
+            alert('Guardado: ' + currentLat.toFixed(6) + ', ' + currentLng.toFixed(6));
+        }
+    </script>
+</body>
+</html>

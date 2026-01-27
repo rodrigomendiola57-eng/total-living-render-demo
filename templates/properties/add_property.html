@@ -1,0 +1,289 @@
+{% extends 'panel/base.html' %}
+{% load static %}
+
+{% block title %}Agregar Propiedad{% endblock %}
+
+{% block extra_css %}<style>
+.form-wrapper{background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);padding:60px 20px;min-height:100vh}
+.form-container{max-width:1200px;margin:0 auto;background:#fff;padding:50px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,0.1)}
+.page-header{text-align:center;margin-bottom:50px;padding-bottom:30px;border-bottom:3px solid #40452E}
+.page-title{color:#40452E;font-size:42px;font-weight:300;letter-spacing:4px;margin-bottom:10px}
+.page-subtitle{color:#C4A572;font-size:16px;letter-spacing:1px}
+.form-section{background:#f9f9f9;padding:30px;margin-bottom:30px;border-radius:10px;border-left:5px solid #40452E}
+.section-title{color:#40452E;font-size:22px;margin-bottom:25px;font-weight:300;letter-spacing:2px;display:flex;align-items:center}
+.section-title i{margin-right:15px;color:#C4A572;font-size:28px}
+.form-group{margin-bottom:25px}
+.form-group label{display:block;margin-bottom:10px;color:#333;font-size:15px;font-weight:500}
+.form-group label .required{color:#e74c3c;margin-left:3px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:14px;border:2px solid #e0e0e0;border-radius:8px;font-size:15px;transition:all 0.3s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#40452E;box-shadow:0 0 0 3px rgba(64,69,46,0.1)}
+.form-group textarea{min-height:150px;resize:vertical;font-family:inherit}
+.form-group small{display:block;margin-top:5px;color:#666;font-size:13px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:25px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:25px}
+.row-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.checkbox-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:15px}
+.checkbox-item{display:flex;align-items:center;padding:12px;background:#fff;border-radius:8px;border:2px solid #e0e0e0;transition:all 0.3s;cursor:pointer}
+.checkbox-item:hover{border-color:#40452E;background:#f5f5f5}
+.checkbox-item input[type="checkbox"]{margin-right:10px;width:20px;height:20px;cursor:pointer;accent-color:#40452E}
+.checkbox-item label{margin:0;cursor:pointer;font-weight:normal;font-size:14px}
+.map-preview{background:#fff;padding:20px;border-radius:10px;border:2px dashed #C4A572;text-align:center;margin-top:15px}
+.map-preview img{max-width:100%;height:auto;border-radius:8px;margin-top:10px}
+.map-help{background:#fff3cd;padding:15px;border-radius:8px;border-left:4px solid #ffc107;margin-top:15px}
+.map-help strong{color:#856404}
+.btn-submit{background:linear-gradient(135deg,#40452E 0%,#2a2d1e 100%);color:#fff;padding:18px 60px;border:none;border-radius:50px;cursor:pointer;font-size:18px;font-weight:300;letter-spacing:3px;transition:all 0.3s;box-shadow:0 5px 20px rgba(64,69,46,0.3);display:inline-flex;align-items:center;gap:10px}
+.btn-submit:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(64,69,46,0.4)}
+.btn-submit i{font-size:22px}
+.btn-container{text-align:center;margin-top:50px;padding-top:30px;border-top:2px solid #e0e0e0}
+.feature-badge{display:inline-flex;align-items:center;padding:10px 20px;background:#fff;border:2px solid #40452E;border-radius:50px;margin-right:15px;margin-bottom:15px;cursor:pointer;transition:all 0.3s}
+.feature-badge:hover{background:#40452E;color:#fff}
+.feature-badge input[type="checkbox"]{margin-right:8px;width:18px;height:18px;cursor:pointer}
+@media (max-width:768px){.row,.row-3,.row-4,.checkbox-grid{grid-template-columns:1fr}}
+</style>{% endblock %}
+
+{% block content %}
+<div class="form-wrapper">
+<div class="form-container">
+<div class="page-header">
+<h1 class="page-title">AGREGAR PROPIEDAD</h1>
+<p class="page-subtitle">Complete el formulario con los detalles de la propiedad</p>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+
+<!-- Información Básica -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-info-circle-fill"></i>Información Básica</h2>
+<div class="form-group">
+<label>Título de la Propiedad<span class="required">*</span></label>
+<input type="text" name="title" required placeholder="Ej: Hermosa Casa en Polanco con Jardín">
+<small>Título descriptivo y atractivo para la propiedad</small>
+</div>
+<div class="row">
+<div class="form-group">
+<label>Tipo de Propiedad<span class="required">*</span></label>
+<select name="property_type" required>
+<option value="casa">Casa</option>
+<option value="departamento">Departamento</option>
+<option value="terreno">Terreno</option>
+<option value="local">Local Comercial</option>
+</select>
+</div>
+<div class="form-group">
+<label>Tipo de Operación<span class="required">*</span></label>
+<select name="operation_type" required>
+<option value="venta">Venta</option>
+<option value="renta">Renta</option>
+<option value="venta_renta">Venta o Renta</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label>Precio (MXN)<span class="required">*</span></label>
+<input type="number" name="price" step="0.01" required placeholder="0.00">
+<small>Ingrese el precio en pesos mexicanos</small>
+</div>
+<div class="form-group">
+<label>Descripción Detallada<span class="required">*</span></label>
+<textarea name="description" required placeholder="Describa las características, ventajas y detalles especiales de la propiedad..."></textarea>
+<small>Sea descriptivo y mencione los puntos más atractivos</small>
+</div>
+</div>
+
+<!-- Ubicación -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-geo-alt-fill"></i>Ubicación</h2>
+<div class="form-group">
+<label>Dirección Completa<span class="required">*</span></label>
+<input type="text" name="address" required placeholder="Calle, número, colonia">
+</div>
+<div class="row-3">
+<div class="form-group">
+<label>Ciudad<span class="required">*</span></label>
+<input type="text" name="city" required placeholder="Ciudad">
+</div>
+<div class="form-group">
+<label>Estado<span class="required">*</span></label>
+<input type="text" name="state" required placeholder="Estado">
+</div>
+<div class="form-group">
+<label>Código Postal</label>
+<input type="text" name="zip_code" placeholder="00000">
+</div>
+</div>
+<div class="form-group">
+<label>Link de Google Maps</label>
+<input type="url" name="google_maps_url" placeholder="https://maps.google.com/...">
+<small>Pegue el enlace de Google Maps de la ubicación exacta</small>
+</div>
+<div class="map-help">
+<strong>¿Cómo obtener el link de Google Maps?</strong><br>
+1. Abre Google Maps y busca la dirección<br>
+2. Haz clic derecho en el marcador<br>
+3. Selecciona "Compartir" o "Copiar enlace"<br>
+4. Pega el enlace aquí
+</div>
+</div>
+
+<!-- Características -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-house-fill"></i>Características Principales</h2>
+<div class="row-4">
+<div class="form-group">
+<label>Recámaras</label>
+<input type="number" name="bedrooms" min="0" value="0">
+</div>
+<div class="form-group">
+<label>Baños Completos</label>
+<input type="number" name="bathrooms" min="0" value="0">
+</div>
+<div class="form-group">
+<label>Medios Baños</label>
+<input type="number" name="half_bathrooms" min="0" value="0">
+</div>
+<div class="form-group">
+<label>Estacionamientos</label>
+<input type="number" name="parking_spaces" min="0" value="0">
+</div>
+</div>
+<div class="row-4">
+<div class="form-group">
+<label>Área Total (m²)<span class="required">*</span></label>
+<input type="number" name="area" step="0.01" min="0" required placeholder="0.00">
+<small>Área total de la propiedad</small>
+</div>
+<div class="form-group">
+<label>Área Construcción (m²)</label>
+<input type="number" name="construction_area" step="0.01" min="0" placeholder="0.00">
+<small>Área construida</small>
+</div>
+<div class="form-group">
+<label>Área Terreno (m²)</label>
+<input type="number" name="lot_area" step="0.01" min="0" placeholder="0.00">
+<small>Área del terreno</small>
+</div>
+<div class="form-group">
+<label>Niveles/Pisos</label>
+<input type="number" name="floors" min="1" value="1">
+<small>Número de niveles</small>
+</div>
+</div>
+<div class="row-3">
+<div class="form-group">
+<label>Medida Frente (m)</label>
+<input type="number" name="front_measure" step="0.01" min="0" placeholder="0.00">
+</div>
+<div class="form-group">
+<label>Medida Fondo (m)</label>
+<input type="number" name="back_measure" step="0.01" min="0" placeholder="0.00">
+</div>
+<div class="form-group">
+<label>Año Construcción</label>
+<input type="number" name="year_built" min="1900" max="2030" placeholder="2020">
+</div>
+</div>
+<div class="row-3">
+<div class="form-group">
+<label>Año Construcción</label>
+<input type="number" name="year_built" min="1900" max="2030" placeholder="2020">
+</div>
+<div class="form-group">
+<label>Ambientes</label>
+<input type="number" name="rooms" min="0" value="0">
+</div>
+<div class="form-group">
+<label>Cuota Mantenimiento</label>
+<input type="number" name="maintenance_fee" step="0.01" min="0" placeholder="0.00">
+</div>
+</div>
+</div>
+
+<!-- Distribución -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-layout-three-columns"></i>Distribución Interior</h2>
+<div class="checkbox-grid">
+<div class="checkbox-item"><input type="checkbox" name="has_sala" id="has_sala"><label for="has_sala">Sala</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_comedor" id="has_comedor"><label for="has_comedor">Comedor</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_cocina" id="has_cocina"><label for="has_cocina">Cocina Integral</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_estudio" id="has_estudio"><label for="has_estudio">Estudio</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_despensa" id="has_despensa"><label for="has_despensa">Despensa</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_cuarto_tv" id="has_cuarto_tv"><label for="has_cuarto_tv">Cuarto TV</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_gimnasio" id="has_gimnasio"><label for="has_gimnasio">Gimnasio</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_balcon" id="has_balcon"><label for="has_balcon">Balcón</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_jardin" id="has_jardin"><label for="has_jardin">Jardín</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_patio" id="has_patio"><label for="has_patio">Patio</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_roof_garden" id="has_roof_garden"><label for="has_roof_garden">Roof Garden</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_area_lavado" id="has_area_lavado"><label for="has_area_lavado">Área Lavado</label></div>
+<div class="checkbox-item"><input type="checkbox" name="has_bodega" id="has_bodega"><label for="has_bodega">Bodega</label></div>
+</div>
+</div>
+
+<!-- Amenidades -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-star-fill"></i>Amenidades del Conjunto</h2>
+<div class="checkbox-grid">
+<div class="checkbox-item"><input type="checkbox" name="amenity_salon" id="amenity_salon"><label for="amenity_salon">Salón Eventos</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_vigilancia" id="amenity_vigilancia"><label for="amenity_vigilancia">Vigilancia 24/7</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_acceso" id="amenity_acceso"><label for="amenity_acceso">Acceso Controlado</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_areas_verdes" id="amenity_areas_verdes"><label for="amenity_areas_verdes">Áreas Verdes</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_juegos" id="amenity_juegos"><label for="amenity_juegos">Juegos Infantiles</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_gimnasio" id="amenity_gimnasio"><label for="amenity_gimnasio">Gimnasio</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_alberca" id="amenity_alberca"><label for="amenity_alberca">Alberca</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_cancha_futbol" id="amenity_cancha_futbol"><label for="amenity_cancha_futbol">Cancha Fútbol</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_cancha_tenis" id="amenity_cancha_tenis"><label for="amenity_cancha_tenis">Cancha Tenis</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_cancha_basket" id="amenity_cancha_basket"><label for="amenity_cancha_basket">Cancha Basketball</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_asadores" id="amenity_asadores"><label for="amenity_asadores">Zona Asadores</label></div>
+<div class="checkbox-item"><input type="checkbox" name="amenity_pet_friendly" id="amenity_pet_friendly"><label for="amenity_pet_friendly">Pet Friendly</label></div>
+</div>
+</div>
+
+<!-- Servicios -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-tools"></i>Servicios Disponibles</h2>
+<div class="checkbox-grid">
+<div class="checkbox-item"><input type="checkbox" name="service_agua" id="service_agua"><label for="service_agua">Agua</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_drenaje" id="service_drenaje"><label for="service_drenaje">Drenaje</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_luz" id="service_luz"><label for="service_luz">Luz</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_gas" id="service_gas"><label for="service_gas">Gas Estacionario</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_internet" id="service_internet"><label for="service_internet">Internet</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_fibra" id="service_fibra"><label for="service_fibra">Fibra Óptica</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_cable" id="service_cable"><label for="service_cable">TV Cable</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_telefono" id="service_telefono"><label for="service_telefono">Línea Telefónica</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_cisterna" id="service_cisterna"><label for="service_cisterna">Cisterna</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_hidroneumatico" id="service_hidroneumatico"><label for="service_hidroneumatico">Hidroneumático</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_aire" id="service_aire"><label for="service_aire">Aire Acondicionado</label></div>
+<div class="checkbox-item"><input type="checkbox" name="service_boiler" id="service_boiler"><label for="service_boiler">Boiler</label></div>
+</div>
+</div>
+
+<!-- Imágenes -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-images"></i>Fotografías de la Propiedad</h2>
+<div class="form-group">
+<label>Seleccionar Imágenes (múltiples)</label>
+<input type="file" name="images" multiple accept="image/*" style="padding:20px;border:3px dashed #C4A572;background:#fff">
+<small>La primera imagen será la principal. Formatos: JPG, PNG. Máximo 10MB por imagen.</small>
+</div>
+</div>
+
+<!-- Opciones -->
+<div class="form-section">
+<h2 class="section-title"><i class="bi bi-toggles"></i>Opciones de Publicación</h2>
+<div class="feature-badge">
+<input type="checkbox" name="is_featured" id="is_featured">
+<label for="is_featured">★ DESTACADA (Carrusel Principal)</label>
+</div>
+<div class="feature-badge">
+<input type="checkbox" name="is_new" id="is_new">
+<label for="is_new">• NUEVA</label>
+</div>
+</div>
+
+<div class="btn-container">
+<button type="submit" class="btn-submit"><i class="bi bi-check-circle-fill"></i>GUARDAR PROPIEDAD</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}

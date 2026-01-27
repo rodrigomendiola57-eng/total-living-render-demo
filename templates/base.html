@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es" style="overflow-x: hidden; max-width: 100vw;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Total Living - Encuentra tu propiedad ideal. Casas, departamentos, terrenos y más en venta y renta.">
+    <title>{% block title %}Total Living - Inmobiliaria{% endblock %}</title>
+    
+    <!-- Favicon -->
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}?v=2">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts - Total Living Brand Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+            width: 100% !important;
+            position: relative !important;
+        }
+        .display-5, .display-4, h1, h2 {
+            font-family: 'Raleway', sans-serif !important;
+            font-weight: 300 !important;
+            letter-spacing: 3px !important;
+        }
+        /* Desktop - Menú completo visible */
+        @media (min-width: 992px) {
+            .navbar {
+                padding: 0.5rem 0 !important;
+            }
+            .navbar .container {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: nowrap !important;
+            }
+            .navbar-brand {
+                display: flex !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+                flex-shrink: 0 !important;
+            }
+            .navbar-brand img {
+                flex-shrink: 0 !important;
+            }
+            .navbar-collapse {
+                flex-grow: 1 !important;
+            }
+            .navbar-nav {
+                display: flex !important;
+                align-items: center !important;
+                gap: 0.1rem !important;
+                flex-wrap: nowrap !important;
+            }
+            .navbar-nav .nav-link {
+                padding: 0.5rem 0.3rem !important;
+                white-space: nowrap !important;
+                font-size: 0.75rem !important;
+            }
+        }
+    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body style="overflow-x: hidden !important; max-width: 100vw !important;">
+    <!-- Navbar Mejorado con Identidad de Marca -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}" style="padding: 0 !important; margin-right: 0.8rem !important; margin-left: 0 !important; padding-left: 0 !important; order: -1; float: left; flex-shrink: 0;">
+                <img src="{% static 'images/SharedScreenshot.png' %}?v=2" alt="Total Living Logo" class="navbar-logo-icon me-2" style="display: block;">
+                <img src="{% static 'images/logo.png' %}?v=2" alt="Total Living" class="navbar-logo" style="display: block;">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+                           href="{% url 'home' %}">
+                            Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="comprarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Comprar
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="comprarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'properties:departamentos' %}">Departamentos</a></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:casas' %}">Casas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:terrenos' %}">Terrenos</a></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:locales' %}">Locales Comerciales</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="rentarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Rentar
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="rentarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'properties:renta' %}">Todas las Rentas</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:renta_departamentos' %}">Departamentos</a></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:renta_casas' %}">Casas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:renta_locales' %}">Locales Comerciales</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'desarrollos' in request.path %}active{% endif %}" href="{% url 'developments:list' %}">
+                            Desarrollos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'regiones' in request.path %}active{% endif %}" href="{% url 'regions:list' %}">
+                            Regiones
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            Nuestra Agencia
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            Blog
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'contact' in request.path %}active{% endif %}" 
+                           href="{% url 'contact:contact' %}">
+                            Contacto
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Idioma
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                            <li><a class="dropdown-item" href="#">Español</a></li>
+                            <li><a class="dropdown-item" href="#">English</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link panel-access" href="{% if user.is_authenticated and user.is_staff %}{% url 'panel:dashboard' %}{% else %}{% url 'panel:login' %}{% endif %}" title="{% if user.is_authenticated and user.is_staff %}Panel de Gestión{% else %}Acceso Staff{% endif %}">
+                            Panel
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages Mejorados -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% else %}info-circle{% endif %}-fill me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer Mejorado -->
+    <footer class="bg-dark text-light mt-5 py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <img src="{% static 'images/SharedScreenshot.png' %}?v=2" alt="Total Living Logo" class="me-2 footer-logo-icon" style="height: 100px; width: auto;">
+                        <img src="{% static 'images/logo.png' %}?v=2" alt="Total Living" class="me-2 footer-logo" style="width: 360px; max-height: 100px;">
+                        <span class="d-none">Total Living</span>
+                    </h5>
+                    <p class="text-light-emphasis">
+                        Tu inmobiliaria de confianza. Encuentra la propiedad ideal para ti.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="text-light me-3" title="Facebook">
+                            <i class="bi bi-facebook fs-5"></i>
+                        </a>
+                        <a href="#" class="text-light me-3" title="Instagram">
+                            <i class="bi bi-instagram fs-5"></i>
+                        </a>
+                        <a href="#" class="text-light me-3" title="WhatsApp">
+                            <i class="bi bi-whatsapp fs-5"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="fw-bold mb-3">Enlaces Rápidos</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'home' %}" class="text-light-emphasis text-decoration-none">
+                                <i class="bi bi-chevron-right"></i> Inicio
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'properties:list' %}" class="text-light-emphasis text-decoration-none">
+                                <i class="bi bi-chevron-right"></i> Propiedades
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'search:search' %}" class="text-light-emphasis text-decoration-none">
+                                <i class="bi bi-chevron-right"></i> Búsqueda Avanzada
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'contact:contact' %}" class="text-light-emphasis text-decoration-none">
+                                <i class="bi bi-chevron-right"></i> Contacto
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="fw-bold mb-3">Contacto</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-telephone me-2"></i>
+                            <a href="tel:+525512345678" class="text-light-emphasis text-decoration-none">
+                                +52 55 1234 5678
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-envelope me-2"></i>
+                            <a href="mailto:contacto@totalliving.com" class="text-light-emphasis text-decoration-none">
+                                contacto@totalliving.com
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            <span class="text-light-emphasis">Ciudad de México, México</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 bg-light opacity-25">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0 text-light-emphasis small">
+                        &copy; {% now "Y" %} Total Living. Todos los derechos reservados.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-light-emphasis small">
+                        <a href="#" class="text-light-emphasis text-decoration-none">Términos y Condiciones</a> | 
+                        <a href="#" class="text-light-emphasis text-decoration-none">Política de Privacidad</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

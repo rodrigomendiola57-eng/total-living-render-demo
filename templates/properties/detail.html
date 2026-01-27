@@ -1,0 +1,612 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ property.title }} - Total Living{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    .property-gallery img {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        border-radius: 8px;
+    }
+    .property-gallery img:hover {
+        transform: scale(1.05);
+    }
+    .property-image-detail {
+        margin-bottom: 0;
+    }
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    /* IMPORTANTE: Si no pones altura, el mapa será invisible (blanco) */
+    #property-map {
+        height: 450px;
+        width: 100%;
+        border-radius: 15px;
+        border: 2px solid #D6B585;
+    }
+    
+    /* Botones de Gestión Corporativos */
+    .btn-management {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 0.65rem 1.2rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+        border: 2px solid;
+        text-transform: none;
+    }
+    
+    .btn-management:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn-management:active {
+        transform: translateY(0);
+    }
+    
+    .btn-images {
+        background: linear-gradient(135deg, #40452E 0%, #38382E 100%);
+        color: #F2ECE0;
+        border-color: #40452E;
+    }
+    
+    .btn-images:hover {
+        background: linear-gradient(135deg, #38382E 0%, #2d2d25 100%);
+        color: #F2ECE0;
+        border-color: #38382E;
+    }
+    
+    .btn-edit {
+        background: linear-gradient(135deg, #D6B585 0%, #C4A572 100%);
+        color: #38382E;
+        border-color: #D6B585;
+    }
+    
+    .btn-edit:hover {
+        background: linear-gradient(135deg, #C4A572 0%, #B8965F 100%);
+        color: #38382E;
+        border-color: #C4A572;
+    }
+    
+    .btn-delete {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: #ffffff;
+        border-color: #dc3545;
+    }
+    
+    .btn-delete:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        color: #ffffff;
+        border-color: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Mejorado -->
+<nav aria-label="breadcrumb" class="bg-light py-3 border-bottom">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'properties:list' %}">Propiedades</a></li>
+            <li class="breadcrumb-item active">{{ property.title|truncatewords:5 }}</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Imágenes con Lightbox -->
+        <div class="col-lg-8 mb-2">
+            {% if images %}
+            <!-- Imagen Principal -->
+            <div class="mb-3">
+                <a href="{{ images.0.image.url }}" data-lightbox="property-gallery" data-title="{{ property.title }}">
+                    <img id="mainImage" src="{{ images.0.image.url }}" 
+                         class="img-fluid rounded property-image-detail shadow-sm" 
+                         alt="{{ property.title }}">
+                </a>
+            </div>
+            
+            <!-- Galería de Miniaturas -->
+            {% if images|length > 1 %}
+            <div class="row g-2 property-gallery">
+                {% for image in images %}
+                <div class="col-3">
+                    <a href="{{ image.image.url }}" data-lightbox="property-gallery" data-title="{{ image.alt_text|default:property.title }}">
+                        <img src="{{ image.image.url }}" 
+                             class="img-fluid rounded" 
+                             alt="{{ image.alt_text|default:property.title }}"
+                             style="height: 100px; object-fit: cover; width: 100%;">
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center rounded shadow-sm" 
+                 style="height: 500px;">
+                <div class="text-center">
+                    <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                    <p class="text-muted mt-3">No hay imágenes disponibles</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Mapa - Justo después de las fotos -->
+            {% if property.latitude and property.longitude %}
+            <div class="info-card mt-4">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-map"></i> Ubicación en el Mapa
+                </h2>
+                <div id="property-map" style="height: 450px; width: 100%;"></div>
+                <div class="mt-3">
+                    {% if property.google_maps_url %}
+                    <a href="{{ property.google_maps_url }}" target="_blank" class="btn btn-success w-100">
+                        <i class="bi bi-geo-alt-fill"></i> Abrir en Google Maps
+                    </a>
+                    {% else %}
+                    <small class="text-muted d-block">
+                        <a href="https://www.openstreetmap.org/?mlat={{ property.latitude }}&mlon={{ property.longitude }}#map=16/{{ property.latitude }}/{{ property.longitude }}" target="_blank" class="text-decoration-none">
+                            <i class="bi bi-box-arrow-up-right"></i> Ver en OpenStreetMap
+                        </a>
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+            {% elif property.google_maps_url %}
+            <div class="info-card mt-4">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-map"></i> Ubicación
+                </h2>
+                <a href="{{ property.google_maps_url }}" target="_blank" class="btn btn-success btn-lg w-100">
+                    <i class="bi bi-geo-alt-fill"></i> Abrir Ubicación en Google Maps
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Información Principal -->
+        <div class="col-lg-4">
+            <div class="info-card" style="top: 20px;">
+                <div class="mb-3">
+                    {% if property.is_featured %}
+                    <span class="badge bg-warning text-dark mb-2">
+                        <i class="bi bi-star-fill"></i> Destacada
+                    </span>
+                    {% endif %}
+                    {% if property.is_new %}
+                    <span class="badge bg-success mb-2">
+                        <i class="bi bi-new"></i> Nueva
+                    </span>
+                    {% endif %}
+                    <span class="badge bg-primary">{{ property.get_property_type_display }}</span>
+                    <span class="badge bg-info">{{ property.get_operation_type_display }}</span>
+                </div>
+                
+                <h1 class="h3 mb-3 fw-bold">{{ property.title }}</h1>
+                
+                <div class="property-price mb-4">
+                    {{ property.get_price_display }}
+                </div>
+                
+                <div class="property-features mb-4">
+                    {% if property.bedrooms > 0 %}
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-door-open fs-4"></i>
+                        <span class="ms-2"><strong>{{ property.bedrooms }}</strong> Recámaras</span>
+                    </div>
+                    {% endif %}
+                    {% if property.bathrooms > 0 %}
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-droplet fs-4"></i>
+                        <span class="ms-2"><strong>{{ property.bathrooms }}</strong> Baños</span>
+                    </div>
+                    {% endif %}
+                    {% if property.parking_spaces > 0 %}
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-car-front fs-4"></i>
+                        <span class="ms-2"><strong>{{ property.parking_spaces }}</strong> Estacionamientos</span>
+                    </div>
+                    {% endif %}
+                    {% if property.area %}
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-rulers fs-4"></i>
+                        <span class="ms-2"><strong>{{ property.area }}</strong> m²</span>
+                    </div>
+                    {% endif %}
+                    {% if property.floors > 1 %}
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-building fs-4"></i>
+                        <span class="ms-2"><strong>{{ property.floors }}</strong> Niveles</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="bi bi-geo-alt"></i> Ubicación
+                    </h5>
+                    <p class="mb-1">
+                        {{ property.address }}, {{ property.city }}, {{ property.state }}
+                    </p>
+                    {% if property.zip_code %}
+                    <p class="text-muted small mb-0">CP: {{ property.zip_code }}</p>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url 'contact:contact' %}?property={{ property.pk }}" 
+                   class="btn btn-primary btn-lg w-100 mb-3" style="background: linear-gradient(135deg, #4A4E38 0%, #38382E 100%); color: #F2ECE0; border: none;">
+                    <i class="bi bi-envelope"></i> Contactar sobre esta Propiedad
+                </a>
+                
+                <a href="{% url 'properties:download_pdf' property.pk %}" 
+                   class="btn btn-success btn-lg w-100 mb-3">
+                    <i class="bi bi-file-earmark-pdf"></i> Descargar Ficha Técnica
+                </a>
+                
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary flex-fill" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Imprimir
+                        </button>
+                        <button class="btn btn-outline-secondary flex-fill" onclick="shareProperty()">
+                            <i class="bi bi-share"></i> Compartir
+                        </button>
+                    </div>
+                    {% if user.is_staff %}
+                    <div class="border-top pt-3">
+                        <h6 class="text-muted mb-2 small fw-semibold text-uppercase" style="letter-spacing: 1px;">
+                            <i class="bi bi-gear"></i> Gestión de Propiedad
+                        </h6>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'properties:manage_images' property.pk %}" class="btn btn-management btn-images flex-fill">
+                                <i class="bi bi-images"></i> Gestionar Imágenes
+                            </a>
+                            <a href="{% url 'properties:edit' property.pk %}" class="btn btn-management btn-edit flex-fill">
+                                <i class="bi bi-pencil-square"></i> Editar Propiedad
+                            </a>
+                            <a href="{% url 'panel:property_delete' property.pk %}" class="btn btn-management btn-delete flex-fill" onclick="return confirm('¿Estás seguro de que deseas eliminar esta propiedad?\n\nEsta acción no se puede deshacer.');">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Descripción y Detalles -->
+    <div class="row" style="margin-top: 1rem;">
+        <div class="col-lg-8">
+            <!-- Descripción -->
+            <div class="info-card">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-file-text"></i> Descripción
+                </h2>
+                <p class="text-muted" style="white-space: pre-line; line-height: 1.8;">{{ property.description }}</p>
+            </div>
+            
+            <!-- Características Adicionales -->
+            {% if features %}
+            <div class="info-card">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-check-circle"></i> Características
+                </h2>
+                <div class="row">
+                    {% for feature_rel in features %}
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <span>{{ feature_rel.feature.name }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Información Adicional -->
+            <div class="info-card">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-info-circle"></i> Información Adicional
+                </h2>
+                <div class="row">
+                    {% if property.construction_area %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Área de Construcción:</strong><br>
+                        <span class="text-muted">{{ property.construction_area }} m²</span>
+                    </div>
+                    {% endif %}
+                    {% if property.lot_area %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Área de Terreno:</strong><br>
+                        <span class="text-muted">{{ property.lot_area }} m²</span>
+                    </div>
+                    {% endif %}
+                    {% if property.year_built %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Año de Construcción:</strong><br>
+                        <span class="text-muted">{{ property.year_built }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Estado:</strong><br>
+                        <span class="badge bg-{% if property.status == 'disponible' %}success{% else %}secondary{% endif %} fs-6">
+                            {{ property.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Distribución -->
+            {% if property.has_sala or property.has_comedor or property.has_cocina or property.has_estudio or property.has_despensa or property.has_cuarto_tv or property.has_gimnasio or property.has_balcon or property.has_jardin or property.has_patio or property.has_roof_garden or property.has_area_lavado or property.has_bodega %}
+            <div class="info-card">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-layout-three-columns"></i> Distribución
+                </h2>
+                <div class="row">
+                    {% if property.has_sala %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Sala</div>{% endif %}
+                    {% if property.has_comedor %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Comedor</div>{% endif %}
+                    {% if property.has_cocina %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Cocina Integral</div>{% endif %}
+                    {% if property.has_estudio %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Estudio</div>{% endif %}
+                    {% if property.has_despensa %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Despensa</div>{% endif %}
+                    {% if property.has_cuarto_tv %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Cuarto TV</div>{% endif %}
+                    {% if property.has_gimnasio %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Gimnasio</div>{% endif %}
+                    {% if property.has_balcon %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Balcón</div>{% endif %}
+                    {% if property.has_jardin %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Jardín</div>{% endif %}
+                    {% if property.has_patio %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Patio</div>{% endif %}
+                    {% if property.has_roof_garden %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Roof Garden</div>{% endif %}
+                    {% if property.has_area_lavado %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Área de Lavado</div>{% endif %}
+                    {% if property.has_bodega %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Bodega</div>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Amenidades -->
+            {% if property.amenity_salon or property.amenity_vigilancia or property.amenity_acceso or property.amenity_areas_verdes or property.amenity_juegos or property.amenity_gimnasio or property.amenity_alberca or property.amenity_cancha_futbol or property.amenity_cancha_tenis or property.amenity_cancha_basket or property.amenity_asadores or property.amenity_pet_friendly %}
+            <div class="info-card">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-star"></i> Amenidades
+                </h2>
+                <div class="row">
+                    {% if property.amenity_salon %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Salón de Usos Múltiples</div>{% endif %}
+                    {% if property.amenity_vigilancia %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Vigilancia 24/7</div>{% endif %}
+                    {% if property.amenity_acceso %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Acceso Controlado</div>{% endif %}
+                    {% if property.amenity_areas_verdes %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Áreas Verdes</div>{% endif %}
+                    {% if property.amenity_juegos %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Juegos Infantiles</div>{% endif %}
+                    {% if property.amenity_gimnasio %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Gimnasio</div>{% endif %}
+                    {% if property.amenity_alberca %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Alberca</div>{% endif %}
+                    {% if property.amenity_cancha_futbol %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Cancha de Fútbol</div>{% endif %}
+                    {% if property.amenity_cancha_tenis %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Cancha de Tenis</div>{% endif %}
+                    {% if property.amenity_cancha_basket %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Cancha de Basketball</div>{% endif %}
+                    {% if property.amenity_asadores %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Zona de Asadores</div>{% endif %}
+                    {% if property.amenity_pet_friendly %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Pet Friendly</div>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Servicios -->
+            {% if property.service_agua or property.service_drenaje or property.service_luz or property.service_gas or property.service_internet or property.service_fibra or property.service_cable or property.service_telefono or property.service_cisterna or property.service_hidroneumatico or property.service_aire or property.service_boiler %}
+            <div class="info-card">
+                <h2 class="h4 mb-4 fw-bold">
+                    <i class="bi bi-lightning"></i> Servicios
+                </h2>
+                <div class="row">
+                    {% if property.service_agua %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Agua</div>{% endif %}
+                    {% if property.service_drenaje %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Drenaje</div>{% endif %}
+                    {% if property.service_luz %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Luz</div>{% endif %}
+                    {% if property.service_gas %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Gas Estacionario</div>{% endif %}
+                    {% if property.service_internet %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Internet</div>{% endif %}
+                    {% if property.service_fibra %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Fibra Óptica</div>{% endif %}
+                    {% if property.service_cable %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>TV Cable</div>{% endif %}
+                    {% if property.service_telefono %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Línea Telefónica</div>{% endif %}
+                    {% if property.service_cisterna %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Cisterna</div>{% endif %}
+                    {% if property.service_hidroneumatico %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Hidroneumático</div>{% endif %}
+                    {% if property.service_aire %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Aire Acondicionado</div>{% endif %}
+                    {% if property.service_boiler %}<div class="col-md-6 mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Boiler</div>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+        </div>
+        
+        <!-- Propiedades Relacionadas -->
+        {% if related_properties %}
+        <div class="col-lg-4">
+            <div class="info-card">
+                <h3 class="h5 mb-4 fw-bold">Propiedades Similares</h3>
+                {% for related in related_properties %}
+                <div class="d-flex mb-3 pb-3 border-bottom">
+                    {% with main_image=related.get_main_image %}
+                    {% if main_image %}
+                    <a href="{% url 'properties:detail' related.pk %}">
+                        <img src="{{ main_image.image.url }}" 
+                             class="rounded me-3" 
+                             style="width: 90px; height: 90px; object-fit: cover;"
+                             alt="{{ related.title }}">
+                    </a>
+                    {% else %}
+                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center"
+                         style="width: 90px; height: 90px;">
+                        <i class="bi bi-image text-muted"></i>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            <a href="{% url 'properties:detail' related.pk %}" 
+                               class="text-decoration-none text-dark fw-semibold">
+                                {{ related.title|truncatewords:5 }}
+                            </a>
+                        </h6>
+                        <p class="text-primary fw-bold mb-1 small">{{ related.get_price_display }}</p>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-geo-alt"></i> {{ related.city }}
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function shareProperty() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ property.title }}',
+            text: 'Mira esta propiedad: {{ property.title }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copiar URL al portapapeles
+        navigator.clipboard.writeText(window.location.href);
+        alert('URL copiada al portapapeles');
+    }
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+<script>
+// Configurar Lightbox2
+lightbox.option({
+    'resizeDuration': 200,
+    'wrapAround': true,
+    'fadeDuration': 300,
+    'imageFadeDuration': 300,
+    'alwaysShowNavOnTouchDevices': true,
+    'albumLabel': 'Imagen %1 de %2',
+    'disableScrolling': true
+});
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+{% if property.latitude and property.longitude %}
+<script>
+console.log('[MAPA] Iniciando carga del mapa...');
+console.log('[MAPA] Coordenadas:', {{ property.latitude }}, {{ property.longitude }});
+
+// Función para inicializar el mapa
+function inicializarMapa() {
+    console.log('[MAPA] Intentando inicializar...');
+    
+    // 1. Verificar que el contenedor exista
+    var contenedor = document.getElementById('property-map');
+    if (!contenedor) {
+        console.error('[MAPA] ERROR: No se encontró el contenedor #property-map');
+        return false;
+    }
+    console.log('[MAPA] Contenedor encontrado:', contenedor);
+    
+    // 2. Verificar dimensiones del contenedor
+    var rect = contenedor.getBoundingClientRect();
+    console.log('[MAPA] Dimensiones del contenedor:', rect.width, 'x', rect.height);
+    if (rect.width === 0 || rect.height === 0) {
+        console.error('[MAPA] ERROR: El contenedor no tiene dimensiones');
+        return false;
+    }
+    
+    // 3. Verificar que Leaflet esté disponible
+    if (typeof L === 'undefined') {
+        console.error('[MAPA] ERROR: Leaflet no está disponible (L es undefined)');
+        contenedor.innerHTML = '<div class="alert alert-danger p-3">Error: Leaflet no se cargó. Recarga la página.</div>';
+        return false;
+    }
+    console.log('[MAPA] Leaflet está disponible');
+    
+    try {
+        var lat = {{ property.latitude }};
+        var lng = {{ property.longitude }};
+        
+        console.log('[MAPA] Creando mapa en:', lat, lng);
+        
+        // 1. Inicializar mapa
+        var map = L.map('property-map').setView([lat, lng], 16);
+        console.log('[MAPA] Mapa creado');
+        
+        // 2. Cargar la capa de diseño (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        console.log('[MAPA] Capa de tiles agregada');
+        
+        // 3. Agregar un marcador
+        var marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup('<b>{{ property.title|escapejs }}</b><br>{{ property.address|escapejs }}').openPopup();
+        console.log('[MAPA] Marcador agregado');
+        
+        console.log('[MAPA] ✅ Mapa inicializado correctamente');
+        return true;
+        
+    } catch(error) {
+        console.error('[MAPA] ERROR al inicializar:', error);
+        contenedor.innerHTML = '<div class="alert alert-danger p-3">Error: ' + error.message + '</div>';
+        return false;
+    }
+}
+
+// Esperar a que Leaflet esté cargado
+function esperarLeaflet(intentos) {
+    intentos = intentos || 0;
+    console.log('[MAPA] Verificando Leaflet, intento:', intentos);
+    
+    if (typeof L !== 'undefined') {
+        console.log('[MAPA] Leaflet está listo, inicializando mapa...');
+        // Esperar un momento para asegurar que todo esté listo
+        setTimeout(function() {
+            inicializarMapa();
+        }, 100);
+    } else if (intentos < 50) {
+        // Esperar hasta 5 segundos (50 intentos x 100ms)
+        setTimeout(function() {
+            esperarLeaflet(intentos + 1);
+        }, 100);
+    } else {
+        console.error('[MAPA] ERROR: Leaflet no se cargó después de 5 segundos');
+        var contenedor = document.getElementById('property-map');
+        if (contenedor) {
+            contenedor.innerHTML = '<div class="alert alert-danger p-3">Error: Leaflet no se cargó. Verifica tu conexión a internet y recarga la página.</div>';
+        }
+    }
+}
+
+// Iniciar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('[MAPA] DOM cargado, esperando Leaflet...');
+        esperarLeaflet();
+    });
+} else {
+    console.log('[MAPA] DOM ya está listo, esperando Leaflet...');
+    esperarLeaflet();
+}
+
+// También intentar cuando la ventana esté completamente cargada
+window.addEventListener('load', function() {
+    console.log('[MAPA] Ventana completamente cargada');
+    if (typeof L !== 'undefined') {
+        setTimeout(inicializarMapa, 200);
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,793 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Desarrollos - Total Living{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+<style>
+    /* Carrusel Perfectamente Cuadrado - Ocupa toda la pantalla visible */
+    .hero-carousel-section {
+        width: 100%;
+        height: calc(100vh - 120px);
+        margin: 0;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        min-height: calc(100vh - 120px);
+        max-height: calc(100vh - 120px);
+    }
+    
+    .developments-carousel-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    .splide {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .splide__track {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .splide__list {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .splide__slide {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .development-slide-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        /* Optimización de renderizado de imágenes */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        image-rendering: auto;
+        image-rendering: high-quality;
+        -ms-interpolation-mode: bicubic;
+        transition: opacity 0.8s ease;
+        display: block;
+        min-width: 100%;
+        min-height: 100%;
+        will-change: opacity;
+        /* Aceleración por hardware */
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        /* Suavizado de imagen */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .splide__slide.is-active .development-slide-image {
+        opacity: 1;
+    }
+    
+    .development-slide-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%);
+        padding: 80px 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .carousel-header {
+        text-align: right;
+        padding: 15px 50px 0 0;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .carousel-header h2 {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--matte-gold);
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+        font-family: 'Montserrat', sans-serif;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin: 0;
+    }
+    
+    .development-slide-content {
+        position: relative;
+        z-index: 3;
+    }
+    
+    
+    .development-content {
+        padding: 30px;
+    }
+    
+    .development-name {
+        font-size: 1.8rem;
+        font-weight: 300;
+        letter-spacing: 2px;
+        color: #40452E;
+        margin-bottom: 15px;
+    }
+    
+    .development-location {
+        color: #C4A572;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+    
+    .development-description {
+        color: #666;
+        line-height: 1.8;
+        margin-bottom: 25px;
+    }
+    
+    .development-info {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 0;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 25px;
+    }
+    
+    .info-item {
+        text-align: center;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .info-value {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #40452E;
+        margin-top: 5px;
+    }
+    
+    .development-price {
+        font-size: 2rem;
+        font-weight: 300;
+        color: #C4A572;
+        margin-bottom: 20px;
+    }
+    
+    .btn-development {
+        background: #40452E;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 50px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        letter-spacing: 2px;
+        font-weight: 300;
+    }
+    
+    .btn-development:hover {
+        background: #2d3120;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    /* Navegación del Carrusel Moderno con Splide */
+    .splide__arrow {
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.3);
+        transition: all 0.3s ease;
+        opacity: 1;
+    }
+    
+    .splide__arrow:hover {
+        background: rgba(255,255,255,0.3);
+        border-color: rgba(255,255,255,0.5);
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    
+    .splide__arrow svg {
+        fill: white;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .splide__arrow--prev {
+        left: 30px;
+    }
+    
+    .splide__arrow--next {
+        right: 30px;
+    }
+    
+    .splide__pagination {
+        bottom: 30px !important;
+        z-index: 10;
+    }
+    
+    .splide__pagination__page {
+        background: rgba(255,255,255,0.5);
+        width: 12px;
+        height: 12px;
+        opacity: 1;
+        transition: all 0.3s ease;
+        margin: 0 5px;
+    }
+    
+    .splide__pagination__page.is-active {
+        background: #D6B585;
+        width: 30px;
+        border-radius: 15px;
+        transform: scale(1);
+    }
+    
+    /* Badge Destacado */
+    .badge-featured-slide {
+        position: static;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        color: #FFFFFF;
+        padding: 8px 20px;
+        border-radius: 30px;
+        border: 1px solid rgba(255,255,255,0.3);
+        font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 2px;
+        z-index: 10;
+        text-transform: uppercase;
+        font-family: 'Montserrat', sans-serif;
+        margin: 0;
+    }
+    
+    /* Galería Moderna y Elegante de Desarrollos */
+    .developments-gallery-section {
+        width: 100%;
+        padding: 100px 0;
+        background: linear-gradient(to bottom, #f8f8f8 0%, #ffffff 100%);
+        position: relative;
+    }
+    
+    .gallery-title {
+        font-size: 2.8rem;
+        font-weight: 200;
+        letter-spacing: 6px;
+        color: #40452E;
+        text-align: center;
+        margin-bottom: 80px;
+        font-family: 'Montserrat', sans-serif;
+        text-transform: uppercase;
+        position: relative;
+    }
+    
+    .gallery-title::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #D6B585, transparent);
+    }
+    
+    .development-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 50px;
+        padding: 0 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .development-gallery-card {
+        background: #ffffff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        cursor: pointer;
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .development-gallery-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(64, 69, 46, 0) 0%, rgba(64, 69, 46, 0.7) 100%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: 1;
+        border-radius: 20px;
+    }
+    
+    .development-gallery-card:hover {
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    
+    .development-gallery-card:hover::before {
+        opacity: 1;
+    }
+    
+    .development-gallery-image-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #40452E 0%, #2d3120 100%);
+    }
+    
+    .development-gallery-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        image-rendering: high-quality;
+        -ms-interpolation-mode: bicubic;
+    }
+    
+    .development-gallery-card:hover .development-gallery-image {
+        transform: scale(1.15);
+    }
+    
+    .development-gallery-image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+        padding: 30px;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: 2;
+    }
+    
+    .development-gallery-card:hover .development-gallery-image-overlay {
+        opacity: 1;
+    }
+    
+    .development-gallery-image-overlay-content {
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+    }
+    
+    .development-gallery-content {
+        padding: 35px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 2;
+        background: #ffffff;
+        transition: background 0.5s ease;
+    }
+    
+    .development-gallery-card:hover .development-gallery-content {
+        background: rgba(255,255,255,0.98);
+    }
+    
+    .development-gallery-name {
+        font-size: 1.6rem;
+        font-weight: 400;
+        letter-spacing: 2px;
+        color: #40452E;
+        margin-bottom: 15px;
+        font-family: 'Montserrat', sans-serif;
+        line-height: 1.3;
+        transition: color 0.3s ease;
+    }
+    
+    .development-gallery-card:hover .development-gallery-name {
+        color: #40452E;
+    }
+    
+    .development-gallery-location {
+        color: #888;
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 300;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .development-gallery-location i {
+        color: #D6B585;
+        font-size: 1rem;
+    }
+    
+    .development-gallery-price {
+        font-size: 1.9rem;
+        font-weight: 400;
+        color: #D6B585;
+        margin-top: auto;
+        font-family: 'Montserrat', sans-serif;
+        letter-spacing: 1px;
+    }
+    
+    .development-gallery-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #40452E;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        z-index: 3;
+        font-family: 'Montserrat', sans-serif;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .development-gallery-card:hover .development-gallery-badge {
+        transform: scale(1.05);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-carousel-section {
+            height: 100vh;
+            min-height: 100vh;
+            max-height: 100vh;
+        }
+        
+        .developments-carousel-container {
+            height: 100vh;
+        }
+        
+        .splide__slide {
+            height: 100vh;
+        }
+        
+        .development-slide-overlay {
+            padding: 0;
+            justify-content: flex-start;
+            padding-top: 70px;
+        }
+        
+        .carousel-header {
+            padding: 15px 20px 0 20px;
+        }
+        
+        .carousel-header h2 {
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+        }
+        
+        .development-slide-content {
+            padding: 25px 20px !important;
+            margin-top: auto;
+        }
+        
+        .development-slide-content .row {
+            margin: 0;
+            gap: 20px;
+        }
+        
+        .development-slide-content .col-lg-8,
+        .development-slide-content .col-lg-4 {
+            padding: 0;
+            margin-bottom: 0;
+        }
+        
+        .development-slide-content .badge {
+            font-size: 0.7rem !important;
+            padding: 6px 14px !important;
+            margin-bottom: 12px !important;
+            display: inline-block;
+            margin-right: 6px !important;
+        }
+        
+        .development-slide-content h2 {
+            font-size: 1.4rem !important;
+            line-height: 1.3;
+            margin-bottom: 12px !important;
+            font-weight: 600 !important;
+        }
+        
+        .development-slide-content .d-flex.gap-3 {
+            gap: 12px !important;
+            margin-bottom: 15px !important;
+        }
+        
+        .development-slide-content .d-flex.gap-3 span {
+            font-size: 0.8rem !important;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        
+        .development-slide-content .display-4 {
+            font-size: 2rem !important;
+            line-height: 1.2;
+            margin-bottom: 15px !important;
+            font-weight: 700 !important;
+        }
+        
+        .development-slide-content .btn-lg {
+            padding: 14px 24px !important;
+            font-size: 0.95rem !important;
+            width: 100%;
+            font-weight: 600 !important;
+        }
+        
+        .development-slide-content .col-lg-4 {
+            text-align: center !important;
+            margin-top: 20px;
+        }
+        
+        .splide__arrow {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .splide__arrow--prev {
+            left: 15px;
+        }
+        
+        .splide__arrow--next {
+            right: 15px;
+        }
+        
+        .badge-featured-slide {
+            top: 15px;
+            right: 15px;
+            font-size: 0.65rem;
+            padding: 6px 14px;
+        }
+        
+        .developments-gallery-section {
+            padding: 60px 0;
+        }
+        
+        .gallery-title {
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 50px;
+        }
+        
+        .development-gallery-grid {
+            grid-template-columns: 1fr;
+            gap: 35px;
+            padding: 0 20px;
+        }
+        
+        .development-gallery-image-container {
+            height: 350px;
+        }
+        
+        .development-gallery-content {
+            padding: 25px;
+        }
+        
+        .development-gallery-name {
+            font-size: 1.4rem;
+        }
+        
+        .development-gallery-price {
+            font-size: 1.6rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Carrusel Perfectamente Cuadrado - Ocupa toda la pantalla -->
+{% if developments %}
+<section class="hero-carousel-section">
+    <div class="developments-carousel-container">
+        <div class="splide developmentsSplide" id="developmentsSplide">
+            <div class="splide__track">
+                <ul class="splide__list">
+                    {% for development in developments %}
+                    <li class="splide__slide">
+                        {% with main_image=development.get_main_image %}
+                        {% if main_image %}
+                        <img src="{{ main_image.image.url }}" alt="{{ development.name }}" class="development-slide-image" loading="eager" fetchpriority="high">
+                        {% else %}
+                        <div class="development-slide-image" style="background: linear-gradient(135deg, #40452E 0%, #2d3120 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-building" style="font-size: 8rem; color: rgba(255,255,255,0.2);"></i>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        
+                        <div class="development-slide-overlay">
+                            <!-- Título del carrusel -->
+                            <div class="carousel-header">
+                                {% if development.is_featured %}
+                                <span class="badge-featured-slide">
+                                    <i class="bi bi-star-fill"></i> DESTACADO
+                                </span>
+                                {% endif %}
+                                <h2>Desarrollos Exclusivos</h2>
+                            </div>
+                            
+                            <!-- Contenido de la propiedad - IGUAL QUE CARRUSEL DE INICIO -->
+                            <div class="container development-slide-content">
+                                <div class="row align-items-end">
+                                    <div class="col-lg-8">
+                                        {% if development.operation_type %}
+                                        <span class="badge bg-primary mb-3" style="font-size: 1rem; padding: 10px 20px;">
+                                            {{ development.get_operation_type_display }}
+                                        </span>
+                                        {% endif %}
+                                        {% if development.total_units %}
+                                        <span class="badge bg-info mb-3 ms-2" style="font-size: 1rem; padding: 10px 20px;">
+                                            {{ development.total_units }} Unidades
+                                        </span>
+                                        {% endif %}
+                                        
+                                        <h2 class="display-5 fw-bold text-white mb-3" style="font-family: 'Montserrat', sans-serif;">{{ development.name }}</h2>
+                                        
+                                        <div class="d-flex align-items-center gap-3 mb-3" style="font-family: 'Montserrat', sans-serif;">
+                                            <i class="bi bi-geo-alt-fill text-white fs-5"></i>
+                                            <span class="text-white fs-6">{{ development.city }}, {{ development.state }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-4 text-lg-end">
+                                        <div class="mb-4">
+                                            <div class="display-4 fw-bold" style="color: var(--matte-gold); font-family: 'Montserrat', sans-serif;">
+                                                Desde ${{ development.price_from|floatformat:2|intcomma }} MXN
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'contact:contact' %}" class="btn btn-lg px-5 py-3" 
+                                           style="background: var(--matte-gold); color: var(--smoky-black); font-weight: 600; font-size: 1.1rem; font-family: 'Montserrat', sans-serif;">
+                                            <i class="bi bi-eye"></i> Ver Detalles
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Galería de Desarrollos -->
+<section class="developments-gallery-section">
+    <div class="container">
+        <h2 class="gallery-title">Desarrollos Disponibles</h2>
+        <div class="development-gallery-grid">
+            {% for development in developments %}
+            <a href="{% url 'developments:detail' development.pk %}" style="text-decoration: none; color: inherit;">
+            <div class="development-gallery-card">
+                {% if development.operation_type %}
+                <span class="development-gallery-badge">{{ development.get_operation_type_display }}</span>
+                {% endif %}
+                
+                <div class="development-gallery-image-container">
+                    {% with main_image=development.get_main_image %}
+                    {% if main_image %}
+                    <img src="{{ main_image.image.url }}" alt="{{ development.name }}" class="development-gallery-image" loading="lazy">
+                    {% else %}
+                    <div class="development-gallery-image" style="background: linear-gradient(135deg, #40452E 0%, #2d3120 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-building" style="font-size: 5rem; color: rgba(255,255,255,0.3);"></i>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    
+                    <div class="development-gallery-image-overlay">
+                        <div class="development-gallery-image-overlay-content">
+                            {% if development.total_units %}
+                            <p style="margin: 0; font-size: 0.9rem;">
+                                <i class="bi bi-building"></i> {{ development.total_units }} Unidades Disponibles
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="development-gallery-content">
+                    <h3 class="development-gallery-name">{{ development.name }}</h3>
+                    <p class="development-gallery-location">
+                        <i class="bi bi-geo-alt-fill"></i> {{ development.city }}, {{ development.state }}
+                    </p>
+                    <div class="development-gallery-price">
+                        Desde ${{ development.price_from|floatformat:2|intcomma }} MXN
+                    </div>
+                </div>
+            </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% else %}
+<!-- Estado Vacío -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center py-5">
+            <div class="empty-state">
+                <i class="bi bi-building" style="font-size: 5rem; color: #ddd;"></i>
+                <h3 style="color: #999; margin-top: 20px; font-family: 'Montserrat', sans-serif;">No hay desarrollos disponibles</h3>
+                <p style="color: #999; margin-top: 10px;">Próximamente tendremos desarrollos exclusivos disponibles</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+<script>
+    // Carrusel Moderno de Desarrollos con Splide
+    document.addEventListener('DOMContentLoaded', function() {
+        const splide = new Splide('#developmentsSplide', {
+            type: 'fade',
+            rewind: true,
+            autoplay: true,
+            interval: 6000,
+            pauseOnHover: true,
+            pauseOnFocus: false,
+            speed: 1000,
+            arrows: true,
+            pagination: true,
+            keyboard: 'global',
+            lazyLoad: 'nearby',
+            accessibility: {
+                prevSlideMessage: 'Desarrollo anterior',
+                nextSlideMessage: 'Siguiente desarrollo',
+                paginationBulletMessage: 'Ir al desarrollo {{index}}',
+            },
+        });
+        
+        splide.mount();
+    });
+</script>
+{% endblock %}

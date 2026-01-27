@@ -1,0 +1,56 @@
+# Script para generar PDF con toda la información
+# Este código debe agregarse al final de properties/views.py
+
+"""
+@login_required
+@user_passes_test(is_staff_user, login_url='/admin/login/')
+def download_property_pdf(request, pk):
+    from django.http import HttpResponse
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+    import os
+    from django.conf import settings
+    
+    property_obj = get_object_or_404(Property, pk=pk)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Total_Living_{property_obj.slug}.pdf"'
+    
+    doc = SimpleDocTemplate(response, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    olive_green = colors.HexColor('#3B3E2A')
+    matte_gold = colors.HexColor('#D6B585')
+    creamy_beige = colors.HexColor('#F2ECE0')
+    
+    # Logo
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'SharedScreenshot.png')
+    if os.path.exists(logo_path):
+        logo = RLImage(logo_path, width=1.5*inch, height=1.5*inch)
+        logo.hAlign = 'CENTER'
+        elements.append(logo)
+        elements.append(Spacer(1, 0.2*inch))
+    
+    # Header
+    header = Table([[Paragraph('<b><font size=28 color="#3B3E2A">TOTAL LIVING</font></b><br/><font size=12 color="#D6B585">Tu Inmobiliaria de Confianza</font>', ParagraphStyle('H', parent=styles['Normal'], alignment=TA_CENTER))]], colWidths=[7*inch])
+    header.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), creamy_beige), ('ALIGN', (0,0), (-1,-1), 'CENTER'), ('TOPPADDING', (0,0), (-1,-1), 20), ('BOTTOMPADDING', (0,0), (-1,-1), 20), ('BOX', (0,0), (-1,-1), 2, olive_green)]))
+    elements.append(header)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Título
+    elements.append(Paragraph(property_obj.title.upper(), ParagraphStyle('T', parent=styles['Heading1'], fontSize=20, textColor=olive_green, alignment=TA_CENTER, fontName='Helvetica-Bold')))
+    elements.append(Paragraph(property_obj.get_price_display(), ParagraphStyle('P', parent=styles['Normal'], fontSize=24, textColor=matte_gold, alignment=TA_CENTER, fontName='Helvetica-Bold')))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Info General
+    elements.append(Table([[Paragraph('<b><font size=14 color="white">INFORMACIÓN GENERAL</font></b>', styles['Normal'])]], colWidths=[7*inch]).setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), olive_green), ('ALIGN', (0,0), (-1,-1), 'CENTER'), ('TOPPADDING', (0,0), (-1,-1), 10), ('BOTTOMPADDING', (0,0), (-1,-1), 10)])))
+    
+    # Continúa con el resto de secciones...
+    
+    doc.build(elements)
+    return response
+"""
