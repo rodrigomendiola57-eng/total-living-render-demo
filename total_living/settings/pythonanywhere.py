@@ -1,12 +1,12 @@
 """
-Configuración para PythonAnywhere (prueba)
+Configuración para PythonAnywhere
 """
 from .base import *
 
-DEBUG = True
-ALLOWED_HOSTS = ['yourusername.pythonanywhere.com']
+DEBUG = False
+ALLOWED_HOSTS = ['rodrigomendiola.pythonanywhere.com', 'www.rodrigomendiola.pythonanywhere.com']
 
-# Base de datos SQLite para prueba
+# Base de datos SQLite
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -16,7 +16,12 @@ DATABASES = {
 
 # Archivos estáticos
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/yourusername/total_living/staticfiles'
+STATIC_ROOT = '/home/RodrigoMendiola/total_living/staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/yourusername/total_living/media'
+MEDIA_ROOT = '/home/RodrigoMendiola/total_living/media'
+
+# Security
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
