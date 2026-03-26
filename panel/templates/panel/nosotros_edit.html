@@ -1,0 +1,273 @@
+{% extends 'panel/base.html' %}
+
+{% block title %}Editar Nosotros{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nosotros-edit-wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        gap: 14px;
+    }
+    .nosotros-hero {
+        border-radius: 16px;
+        border: 1px solid #e8edf3;
+        background: linear-gradient(130deg, #ffffff 0%, #f6f8fb 100%);
+        box-shadow: 0 10px 28px rgba(26, 35, 45, 0.06);
+        padding: 18px;
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .nosotros-edit-title {
+        margin: 0;
+        color: #263024;
+        font-size: clamp(1.2rem, 2vw, 1.55rem);
+        letter-spacing: 0.2px;
+        font-weight: 700;
+    }
+    .nosotros-edit-sub {
+        color: #6f7783;
+        margin: 6px 0 0;
+        font-size: 0.92rem;
+    }
+    .nosotros-top-actions .btn {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 10px 14px;
+    }
+
+    .nosotros-card {
+        background: #fff;
+        border: 1px solid #e8edf3;
+        border-radius: 14px;
+        margin-bottom: 0;
+        box-shadow: 0 8px 22px rgba(26, 35, 45, 0.05);
+        overflow: hidden;
+    }
+    .nosotros-card .card-body { padding: 16px; }
+    .nosotros-card-head {
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+    .nosotros-card-title {
+        margin: 0;
+        color: #2f3227;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .nosotros-card-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        color: #64707d;
+        background: #f4f7fb;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        padding: 4px 10px;
+    }
+
+    .nosotros-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .nosotros-label { font-size: 12px; font-weight: 700; color: #5f6873; margin-bottom: 6px; display: block; }
+    .nosotros-input, .nosotros-textarea {
+        width: 100%;
+        border: 1px solid #d9dee6;
+        border-radius: 10px;
+        padding: 11px 12px;
+        font-size: 14px;
+        background: #fff;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    }
+    .nosotros-input:focus, .nosotros-textarea:focus {
+        border-color: #7c8a68;
+        box-shadow: 0 0 0 3px rgba(124, 138, 104, 0.16);
+        background: #fff;
+        outline: none;
+    }
+    .nosotros-textarea { min-height: 120px; resize: vertical; line-height: 1.45; }
+    .field-help { margin-top: 5px; color: #8a95a3; font-size: 12px; }
+
+    .nosotros-actions {
+        position: sticky;
+        bottom: 14px;
+        z-index: 3;
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 6px;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid #e8edf3;
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+    .nosotros-actions .btn {
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 10px 16px;
+    }
+
+    @media (max-width: 992px) {
+        .nosotros-grid-2 { grid-template-columns: 1fr; }
+        .nosotros-hero {
+            border-radius: 14px;
+            padding: 14px;
+        }
+        .nosotros-actions {
+            position: static;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            background: #fff;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="nosotros-edit-wrap">
+    <div class="nosotros-hero">
+        <div>
+            <h1 class="nosotros-edit-title">Módulo Nosotros</h1>
+            <p class="nosotros-edit-sub">Edita de forma centralizada los textos institucionales de la página.</p>
+        </div>
+        <div class="nosotros-top-actions">
+            <a href="{% url 'about' %}" target="_blank" class="btn btn-outline-secondary">
+                <i class="bi bi-eye me-1"></i>Vista pública
+            </a>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="nosotros-card">
+            <div class="card-body">
+                <div class="nosotros-card-head">
+                    <h2 class="nosotros-card-title">Filosofía</h2>
+                    <span class="nosotros-card-kicker"><i class="bi bi-stars"></i>Hero</span>
+                </div>
+                <div class="mb-3">
+                    <label class="nosotros-label">Título</label>
+                    <input class="nosotros-input" type="text" name="hero_title" value="{{ content.hero_title }}">
+                </div>
+                <div class="nosotros-grid-2">
+                    <div>
+                        <label class="nosotros-label">Línea 1</label>
+                        <input class="nosotros-input" type="text" name="hero_line_1" value="{{ content.hero_line_1 }}">
+                    </div>
+                    <div>
+                        <label class="nosotros-label">Línea 2</label>
+                        <input class="nosotros-input" type="text" name="hero_line_2" value="{{ content.hero_line_2 }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nosotros-card">
+            <div class="card-body">
+                <div class="nosotros-card-head">
+                    <h2 class="nosotros-card-title">Pilares (8)</h2>
+                    <span class="nosotros-card-kicker"><i class="bi bi-grid-3x3-gap"></i>Bloques</span>
+                </div>
+                <div class="nosotros-grid-2">
+                    <div><label class="nosotros-label">Pilar 1</label><input class="nosotros-input" type="text" name="pillar_1" value="{{ content.pillar_1 }}"></div>
+                    <div><label class="nosotros-label">Pilar 2</label><input class="nosotros-input" type="text" name="pillar_2" value="{{ content.pillar_2 }}"></div>
+                    <div><label class="nosotros-label">Pilar 3</label><input class="nosotros-input" type="text" name="pillar_3" value="{{ content.pillar_3 }}"></div>
+                    <div><label class="nosotros-label">Pilar 4</label><input class="nosotros-input" type="text" name="pillar_4" value="{{ content.pillar_4 }}"></div>
+                    <div><label class="nosotros-label">Pilar 5</label><input class="nosotros-input" type="text" name="pillar_5" value="{{ content.pillar_5 }}"></div>
+                    <div><label class="nosotros-label">Pilar 6</label><input class="nosotros-input" type="text" name="pillar_6" value="{{ content.pillar_6 }}"></div>
+                    <div><label class="nosotros-label">Pilar 7</label><input class="nosotros-input" type="text" name="pillar_7" value="{{ content.pillar_7 }}"></div>
+                    <div><label class="nosotros-label">Pilar 8</label><input class="nosotros-input" type="text" name="pillar_8" value="{{ content.pillar_8 }}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nosotros-card">
+            <div class="card-body">
+                <div class="nosotros-card-head">
+                    <h2 class="nosotros-card-title">Manifiesto T.O.T.A.L</h2>
+                    <span class="nosotros-card-kicker"><i class="bi bi-vector-pen"></i>Mensajes clave</span>
+                </div>
+                <div class="mb-3">
+                    <label class="nosotros-label">Título de sección</label>
+                    <input class="nosotros-input" type="text" name="manifest_title" value="{{ content.manifest_title }}">
+                </div>
+                <div class="nosotros-grid-2">
+                    <div><label class="nosotros-label">T - Significado</label><input class="nosotros-input" type="text" name="manifest_t_meaning" value="{{ content.manifest_t_meaning }}"></div>
+                    <div><label class="nosotros-label">T - Descripción</label><input class="nosotros-input" type="text" name="manifest_t_desc" value="{{ content.manifest_t_desc }}"></div>
+                    <div><label class="nosotros-label">O - Significado</label><input class="nosotros-input" type="text" name="manifest_o_meaning" value="{{ content.manifest_o_meaning }}"></div>
+                    <div><label class="nosotros-label">O - Descripción</label><input class="nosotros-input" type="text" name="manifest_o_desc" value="{{ content.manifest_o_desc }}"></div>
+                    <div><label class="nosotros-label">T2 - Significado</label><input class="nosotros-input" type="text" name="manifest_t2_meaning" value="{{ content.manifest_t2_meaning }}"></div>
+                    <div><label class="nosotros-label">T2 - Descripción</label><input class="nosotros-input" type="text" name="manifest_t2_desc" value="{{ content.manifest_t2_desc }}"></div>
+                    <div><label class="nosotros-label">A - Significado</label><input class="nosotros-input" type="text" name="manifest_a_meaning" value="{{ content.manifest_a_meaning }}"></div>
+                    <div><label class="nosotros-label">A - Descripción</label><input class="nosotros-input" type="text" name="manifest_a_desc" value="{{ content.manifest_a_desc }}"></div>
+                    <div><label class="nosotros-label">L - Significado</label><input class="nosotros-input" type="text" name="manifest_l_meaning" value="{{ content.manifest_l_meaning }}"></div>
+                    <div><label class="nosotros-label">L - Descripción</label><input class="nosotros-input" type="text" name="manifest_l_desc" value="{{ content.manifest_l_desc }}"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nosotros-card">
+            <div class="card-body">
+                <div class="nosotros-card-head">
+                    <h2 class="nosotros-card-title">Misión y Visión</h2>
+                    <span class="nosotros-card-kicker"><i class="bi bi-bullseye"></i>Institucional</span>
+                </div>
+                <div class="mb-3">
+                    <label class="nosotros-label">Título de sección</label>
+                    <input class="nosotros-input" type="text" name="mission_vision_title" value="{{ content.mission_vision_title }}">
+                </div>
+                <div class="nosotros-grid-2">
+                    <div>
+                        <label class="nosotros-label">Título misión</label>
+                        <input class="nosotros-input" type="text" name="mission_title" value="{{ content.mission_title }}">
+                    </div>
+                    <div>
+                        <label class="nosotros-label">Título visión</label>
+                        <input class="nosotros-input" type="text" name="vision_title" value="{{ content.vision_title }}">
+                    </div>
+                </div>
+                <div class="nosotros-grid-2 mt-2">
+                    <div>
+                        <label class="nosotros-label">Texto misión</label>
+                        <textarea class="nosotros-textarea" name="mission_text">{{ content.mission_text }}</textarea>
+                        <div class="field-help">Recomendado: 1 párrafo breve y claro.</div>
+                    </div>
+                    <div>
+                        <label class="nosotros-label">Texto visión</label>
+                        <textarea class="nosotros-textarea" name="vision_text">{{ content.vision_text }}</textarea>
+                        <div class="field-help">Mantén una redacción aspiracional y concreta.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nosotros-card">
+            <div class="card-body">
+                <div class="nosotros-card-head">
+                    <h2 class="nosotros-card-title">Banner de equipo</h2>
+                    <span class="nosotros-card-kicker"><i class="bi bi-people-fill"></i>Cierre visual</span>
+                </div>
+                <label class="nosotros-label">Título</label>
+                <input class="nosotros-input" type="text" name="team_banner_title" value="{{ content.team_banner_title }}">
+            </div>
+        </div>
+
+        <div class="nosotros-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-1"></i>Guardar cambios
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

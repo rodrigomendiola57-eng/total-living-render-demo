@@ -8,7 +8,7 @@ from regions.models import Region
 
 def search_view(request):
     """Vista para búsqueda avanzada de propiedades"""
-    properties = Property.objects.filter(status='disponible')
+    properties = Property.objects.filter(status='disponible').prefetch_related('images')
     
     # Búsqueda por texto
     query = request.GET.get('q', '').strip()
@@ -99,7 +99,7 @@ def search_view(request):
             'min_area': min_area,
             'order_by': order_by,
         },
-        'total_results': properties.count(),
+        'total_results': page_obj.paginator.count,
     }
     
     return render(request, 'search/search.html', context)

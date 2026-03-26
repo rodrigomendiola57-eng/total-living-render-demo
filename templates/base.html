@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" style="overflow-x: hidden; max-width: 100vw;">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -7,26 +7,90 @@
     <title>{% block title %}Total Living - Inmobiliaria{% endblock %}</title>
     
     <!-- Favicon -->
-    {% load static %}
+    {% load static i18n %}
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}?v=2">
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Google Fonts - Total Living Brand Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Total Living Brand Fonts + Navbar (Outfit: redonda, fina, minimal) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Nunito:wght@200;300;400;500&family=Raleway:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         html, body {
-            overflow-x: hidden !important;
-            max-width: 100vw !important;
+            overflow-x: clip !important;
+            scrollbar-gutter: stable;
             width: 100% !important;
             position: relative !important;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        img, video, canvas, svg {
+            max-width: 100%;
+            height: auto;
         }
         .display-5, .display-4, h1, h2 {
             font-family: 'Raleway', sans-serif !important;
             font-weight: 300 !important;
             letter-spacing: 3px !important;
+        }
+        .navbar {
+            font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+            background: rgba(31, 36, 43, 0.88) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22) !important;
+            transition: background 0.25s ease, box-shadow 0.25s ease;
+        }
+        .navbar-nav .nav-link {
+            color: rgba(245, 246, 248, 0.92) !important;
+            border-radius: 10px;
+            transition: color 0.2s ease, background 0.2s ease;
+            font-family: 'Nunito', system-ui, -apple-system, sans-serif !important;
+            font-weight: 200 !important;
+            font-size: 1.02rem;
+            letter-spacing: 0.02em;
+        }
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link:focus {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .navbar-nav .nav-link.active {
+            color: #1f2530 !important;
+            background: #d7b27a;
+            font-weight: 300 !important;
+        }
+        .navbar .dropdown-menu {
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .navbar .dropdown-item {
+            font-family: 'Nunito', system-ui, -apple-system, sans-serif !important;
+            font-weight: 200 !important;
+            letter-spacing: 0.02em;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.96rem;
+        }
+        .navbar .dropdown-item:hover {
+            background: rgba(215, 178, 122, 0.18);
+            color: #2a2f38;
+        }
+        .navbar .dropdown-divider {
+            margin: 6px 0;
+            opacity: 0.25;
+        }
+        .navbar .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.38);
+        }
+        .navbar .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(215, 178, 122, 0.35);
         }
         /* Desktop - Menú completo visible */
         @media (min-width: 992px) {
@@ -38,29 +102,112 @@
                 align-items: center !important;
                 justify-content: space-between !important;
                 flex-wrap: nowrap !important;
+                max-width: 100% !important;
+                padding-left: 12px !important;
+                padding-right: 12px !important;
             }
             .navbar-brand {
                 display: flex !important;
                 align-items: center !important;
                 gap: 0.5rem !important;
                 flex-shrink: 0 !important;
+                min-width: 0 !important;
             }
             .navbar-brand img {
                 flex-shrink: 0 !important;
             }
             .navbar-collapse {
                 flex-grow: 1 !important;
+                min-width: 0 !important;
             }
             .navbar-nav {
                 display: flex !important;
                 align-items: center !important;
-                gap: 0.1rem !important;
-                flex-wrap: nowrap !important;
+                gap: 0.2rem !important;
+                flex-wrap: wrap !important;
+                justify-content: flex-end !important;
+                min-width: 0 !important;
             }
             .navbar-nav .nav-link {
-                padding: 0.5rem 0.3rem !important;
-                white-space: nowrap !important;
-                font-size: 0.75rem !important;
+                padding: 0.5rem 0.5rem !important;
+                white-space: normal !important;
+                font-size: 0.98rem !important;
+                letter-spacing: 0.02em !important;
+                flex-shrink: 1 !important;
+            }
+            .navbar .dropdown-item {
+                font-size: 0.96rem;
+            }
+        }
+
+        .footer-modern {
+            margin-top: 3rem;
+            padding: 3.5rem 0 1.25rem;
+            background: linear-gradient(135deg, #1f232a 0%, #2a2f38 48%, #3a3328 100%);
+            color: #f4f5f7;
+        }
+
+        .footer-title {
+            font-family: 'Raleway', sans-serif;
+            letter-spacing: 1px;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: #f8f9fa;
+        }
+
+        .footer-text {
+            color: rgba(244, 245, 247, 0.86);
+            line-height: 1.65;
+        }
+
+        .footer-link {
+            color: rgba(244, 245, 247, 0.9);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: #d7b27a;
+            text-decoration: none;
+        }
+
+        .footer-social-list {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .social-link-modern {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #f8f9fa;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.25s ease;
+        }
+
+        .social-link-modern:hover {
+            transform: translateY(-2px);
+            background: #d7b27a;
+            border-color: #d7b27a;
+            color: #23262d;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.65rem;
+            color: rgba(244, 245, 247, 0.92);
+        }
+
+        @media (min-width: 992px) {
+            .footer-right-shift {
+                padding-left: 2.5rem;
             }
         }
     </style>
@@ -69,7 +216,7 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body style="overflow-x: hidden !important; max-width: 100vw !important;">
+<body>
     <!-- Navbar Mejorado con Identidad de Marca -->
     <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
         <div class="container">
@@ -86,72 +233,75 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
                            href="{% url 'home' %}">
-                            Inicio
+                            {% trans "Inicio" %}
                         </a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="comprarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Comprar
+                        <a class="nav-link dropdown-toggle {% if '/properties/' in request.path %}active{% endif %}" href="#" id="propiedadesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% trans "Propiedades" %}
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="comprarDropdown">
-                            <li><a class="dropdown-item" href="{% url 'properties:departamentos' %}">Departamentos</a></li>
-                            <li><a class="dropdown-item" href="{% url 'properties:casas' %}">Casas</a></li>
-                            <li><a class="dropdown-item" href="{% url 'properties:terrenos' %}">Terrenos</a></li>
-                            <li><a class="dropdown-item" href="{% url 'properties:locales' %}">Locales Comerciales</a></li>
+                        <ul class="dropdown-menu" aria-labelledby="propiedadesDropdown">
+                            <li><a class="dropdown-item" href="{% url 'properties:comprar_todas' %}">{% trans "Todas las ventas" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:renta' %}">{% trans "Todas las rentas" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'developments:list' %}">{% trans "Todos los desarrollos" %}</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="rentarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Rentar
+                        <a class="nav-link dropdown-toggle {% if 'contact' in request.path %}active{% endif %}" href="#" id="asesoriaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% trans "Asesoría inmobiliaria" %}
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="rentarDropdown">
-                            <li><a class="dropdown-item" href="{% url 'properties:renta' %}">Todas las Rentas</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'properties:renta_departamentos' %}">Departamentos</a></li>
-                            <li><a class="dropdown-item" href="{% url 'properties:renta_casas' %}">Casas</a></li>
-                            <li><a class="dropdown-item" href="{% url 'properties:renta_locales' %}">Locales Comerciales</a></li>
+                        <ul class="dropdown-menu" aria-labelledby="asesoriaDropdown">
+                            <li><a class="dropdown-item" href="{% url 'contact:advisory_purchase' %}">{% trans "Asesoría compra" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'contact:advisory_sale' %}">{% trans "Asesoría venta" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'contact:contact' %}?servicio=inversion">{% trans "Inversión" %}</a></li>
                         </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'desarrollos' in request.path %}active{% endif %}" href="{% url 'developments:list' %}">
-                            Desarrollos
-                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if 'regiones' in request.path %}active{% endif %}" href="{% url 'regions:list' %}">
-                            Regiones
+                            {% trans "Regiones" %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            Nuestra Agencia
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            Blog
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">
+                            {% trans "Nosotros" %}
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if 'contact' in request.path %}active{% endif %}" 
                            href="{% url 'contact:contact' %}">
-                            Contacto
+                            {% trans "Contacto" %}
                         </a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Idioma
+                            {% trans "Idioma" %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                            <li><a class="dropdown-item" href="#">Español</a></li>
-                            <li><a class="dropdown-item" href="#">English</a></li>
+                            <li>
+                                <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                    {% csrf_token %}
+                                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                    <input name="language" type="hidden" value="es">
+                                    <button type="submit" class="dropdown-item">{% trans "Español" %}</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                    {% csrf_token %}
+                                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                    <input name="language" type="hidden" value="en">
+                                    <button type="submit" class="dropdown-item">English</button>
+                                </form>
+                            </li>
                         </ul>
                     </li>
+                    {% if user.is_authenticated and user.is_staff %}
                     <li class="nav-item">
-                        <a class="nav-link panel-access" href="{% if user.is_authenticated and user.is_staff %}{% url 'panel:dashboard' %}{% else %}{% url 'panel:login' %}{% endif %}" title="{% if user.is_authenticated and user.is_staff %}Panel de Gestión{% else %}Acceso Staff{% endif %}">
-                            Panel
+                        <a class="nav-link panel-access" href="{% url 'panel:dashboard' %}" title="Panel de Gestión">
+                            {% trans "Panel" %}
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -175,89 +325,92 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer Mejorado -->
-    <footer class="bg-dark text-light mt-5 py-5">
+    <!-- Footer Moderno -->
+    <footer class="footer-modern">
         <div class="container">
             <div class="row g-4">
-                <div class="col-lg-4">
+                <div class="col-lg-5">
                     <h5 class="fw-bold mb-3 d-flex align-items-center">
                         <img src="{% static 'images/SharedScreenshot.png' %}?v=2" alt="Total Living Logo" class="me-2 footer-logo-icon" style="height: 100px; width: auto;">
                         <img src="{% static 'images/logo.png' %}?v=2" alt="Total Living" class="me-2 footer-logo" style="width: 360px; max-height: 100px;">
                         <span class="d-none">Total Living</span>
                     </h5>
-                    <p class="text-light-emphasis">
-                        Tu inmobiliaria de confianza. Encuentra la propiedad ideal para ti.
+                    <p class="footer-text">
+                        {% trans "Tu inmobiliaria de confianza. Encuentra la propiedad ideal para ti." %}
                     </p>
-                    <div class="social-links">
-                        <a href="#" class="text-light me-3" title="Facebook">
+                    <div class="footer-social-list">
+                        <a href="https://www.facebook.com/total.living.mx?locale=es_LA" class="social-link-modern" title="Facebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                             <i class="bi bi-facebook fs-5"></i>
                         </a>
-                        <a href="#" class="text-light me-3" title="Instagram">
+                        <a href="https://www.instagram.com/total.living.mx/" class="social-link-modern" title="Instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                             <i class="bi bi-instagram fs-5"></i>
                         </a>
-                        <a href="#" class="text-light me-3" title="WhatsApp">
+                        <a href="https://api.whatsapp.com/send?phone=4428669965&utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGn5X9HFky-Zv0gnldNDivmRN9-X2FfomO9tUzoQ_rdZQkfqDQgClxValyE2Ik_aem_UH-eWIpxjSIDvok7Y1QWmQ" class="social-link-modern" title="WhatsApp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
                             <i class="bi bi-whatsapp fs-5"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@total.living.mx" class="social-link-modern" title="TikTok" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                            <i class="bi bi-tiktok fs-5"></i>
                         </a>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <h5 class="fw-bold mb-3">Enlaces Rápidos</h5>
+                <div class="col-lg-3 footer-right-shift">
+                    <h5 class="footer-title">{% trans "Enlaces Rápidos" %}</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2">
-                            <a href="{% url 'home' %}" class="text-light-emphasis text-decoration-none">
-                                <i class="bi bi-chevron-right"></i> Inicio
+                            <a href="{% url 'home' %}" class="footer-link">
+                                <i class="bi bi-chevron-right"></i> {% trans "Inicio" %}
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{% url 'properties:list' %}" class="text-light-emphasis text-decoration-none">
-                                <i class="bi bi-chevron-right"></i> Propiedades
+                            <a href="{% url 'properties:list' %}" class="footer-link">
+                                <i class="bi bi-chevron-right"></i> {% trans "Propiedades" %}
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{% url 'search:search' %}" class="text-light-emphasis text-decoration-none">
-                                <i class="bi bi-chevron-right"></i> Búsqueda Avanzada
+                            <a href="{% url 'search:search' %}" class="footer-link">
+                                <i class="bi bi-chevron-right"></i> {% trans "Búsqueda Avanzada" %}
                             </a>
                         </li>
                         <li class="mb-2">
-                            <a href="{% url 'contact:contact' %}" class="text-light-emphasis text-decoration-none">
-                                <i class="bi bi-chevron-right"></i> Contacto
+                            <a href="{% url 'contact:contact' %}" class="footer-link">
+                                <i class="bi bi-chevron-right"></i> {% trans "Contacto" %}
                             </a>
                         </li>
                     </ul>
                 </div>
-                <div class="col-lg-4">
-                    <h5 class="fw-bold mb-3">Contacto</h5>
+                <div class="col-lg-4 footer-right-shift">
+                    <h5 class="footer-title">{% trans "Contacto" %}</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2">
+                        <li class="footer-contact-item">
                             <i class="bi bi-telephone me-2"></i>
-                            <a href="tel:+525512345678" class="text-light-emphasis text-decoration-none">
+                            <a href="tel:+525512345678" class="footer-link">
                                 +52 55 1234 5678
                             </a>
                         </li>
-                        <li class="mb-2">
+                        <li class="footer-contact-item">
                             <i class="bi bi-envelope me-2"></i>
-                            <a href="mailto:contacto@totalliving.com" class="text-light-emphasis text-decoration-none">
+                            <a href="mailto:contacto@totalliving.com" class="footer-link">
                                 contacto@totalliving.com
                             </a>
                         </li>
-                        <li class="mb-2">
+                        <li class="footer-contact-item">
                             <i class="bi bi-geo-alt me-2"></i>
-                            <span class="text-light-emphasis">Ciudad de México, México</span>
+                            <span class="footer-text">{% trans "Ciudad de México, México" %}</span>
                         </li>
                     </ul>
                 </div>
             </div>
-            <hr class="my-4 bg-light opacity-25">
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.2);">
             <div class="row">
                 <div class="col-md-6">
-                    <p class="mb-0 text-light-emphasis small">
-                        &copy; {% now "Y" %} Total Living. Todos los derechos reservados.
+                    <p class="mb-0 small footer-text">
+                        &copy; {% now "Y" %} Total Living. {% trans "Todos los derechos reservados." %}
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="mb-0 text-light-emphasis small">
-                        <a href="#" class="text-light-emphasis text-decoration-none">Términos y Condiciones</a> | 
-                        <a href="#" class="text-light-emphasis text-decoration-none">Política de Privacidad</a>
+                    <p class="mb-0 small footer-text">
+                        <a href="#" class="footer-link">{% trans "Términos y Condiciones" %}</a> |
+                        <a href="#" class="footer-link">{% trans "Política de Privacidad" %}</a>
                     </p>
                 </div>
             </div>

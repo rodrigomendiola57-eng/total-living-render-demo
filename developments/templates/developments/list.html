@@ -7,16 +7,36 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
 <style>
+    /* Navbar inmersiva para Desarrollos */
+    body.developments-immersive .navbar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 1050;
+        transform: translateY(-120%);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+    }
+
+    body.developments-immersive.developments-nav-visible .navbar {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     /* Carrusel Perfectamente Cuadrado - Ocupa toda la pantalla visible */
     .hero-carousel-section {
         width: 100%;
-        height: calc(100vh - 120px);
+        height: 100vh;
         margin: 0;
         padding: 0;
         position: relative;
         overflow: hidden;
-        min-height: calc(100vh - 120px);
-        max-height: calc(100vh - 120px);
+        min-height: 100vh;
+        max-height: 100vh;
     }
     
     .developments-carousel-container {
@@ -93,25 +113,28 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%);
-        padding: 80px 0;
+        background: linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.15) 0%,
+            rgba(0,0,0,0.25) 40%,
+            rgba(0,0,0,0.75) 78%,
+            rgba(0,0,0,0.92) 100%
+        );
+        padding: 0;
+        padding-bottom: max(100px, env(safe-area-inset-bottom, 0px));
         z-index: 2;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-    }
-    
-    .carousel-header {
-        text-align: right;
-        padding: 15px 50px 0 0;
-        display: flex;
         justify-content: flex-end;
-        align-items: center;
-        gap: 20px;
+        align-items: stretch;
     }
-    
-    .carousel-header h2 {
-        font-size: 1.5rem;
+
+    .carousel-kicker {
+        margin-bottom: 14px;
+    }
+
+    .carousel-kicker h2 {
+        font-size: 1.35rem;
         font-weight: 500;
         color: var(--matte-gold);
         text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
@@ -124,6 +147,8 @@
     .development-slide-content {
         position: relative;
         z-index: 3;
+        width: 100%;
+        padding: 0 24px 8px !important;
     }
     
     
@@ -476,6 +501,10 @@
     
     /* Responsive */
     @media (max-width: 768px) {
+        body.developments-immersive .navbar {
+            transform: translateY(-110%);
+        }
+
         .hero-carousel-section {
             height: 100vh;
             min-height: 100vh;
@@ -492,22 +521,18 @@
         
         .development-slide-overlay {
             padding: 0;
-            justify-content: flex-start;
-            padding-top: 70px;
+            padding-bottom: max(88px, env(safe-area-inset-bottom, 0px));
+            justify-content: flex-end;
         }
-        
-        .carousel-header {
-            padding: 15px 20px 0 20px;
-        }
-        
-        .carousel-header h2 {
+
+        .carousel-kicker h2 {
             font-size: 0.85rem;
             letter-spacing: 1.5px;
         }
         
         .development-slide-content {
-            padding: 25px 20px !important;
-            margin-top: auto;
+            padding: 20px 18px 12px !important;
+            margin-top: 0;
         }
         
         .development-slide-content .row {
@@ -643,20 +668,13 @@
                         {% endwith %}
                         
                         <div class="development-slide-overlay">
-                            <!-- Título del carrusel -->
-                            <div class="carousel-header">
-                                {% if development.is_featured %}
-                                <span class="badge-featured-slide">
-                                    <i class="bi bi-star-fill"></i> DESTACADO
-                                </span>
-                                {% endif %}
-                                <h2>Desarrollos Exclusivos</h2>
-                            </div>
-                            
                             <!-- Contenido de la propiedad - IGUAL QUE CARRUSEL DE INICIO -->
                             <div class="container development-slide-content">
                                 <div class="row align-items-end">
                                     <div class="col-lg-8">
+                                        <div class="carousel-kicker">
+                                            <h2>Desarrollos Exclusivos</h2>
+                                        </div>
                                         {% if development.operation_type %}
                                         <span class="badge bg-primary mb-3" style="font-size: 1rem; padding: 10px 20px;">
                                             {{ development.get_operation_type_display }}
@@ -768,26 +786,79 @@
 <script>
     // Carrusel Moderno de Desarrollos con Splide
     document.addEventListener('DOMContentLoaded', function() {
-        const splide = new Splide('#developmentsSplide', {
-            type: 'fade',
-            rewind: true,
-            autoplay: true,
-            interval: 6000,
-            pauseOnHover: true,
-            pauseOnFocus: false,
-            speed: 1000,
-            arrows: true,
-            pagination: true,
-            keyboard: 'global',
-            lazyLoad: 'nearby',
-            accessibility: {
-                prevSlideMessage: 'Desarrollo anterior',
-                nextSlideMessage: 'Siguiente desarrollo',
-                paginationBulletMessage: 'Ir al desarrollo {{index}}',
-            },
-        });
-        
-        splide.mount();
+        const hasDevelopments = !!document.querySelector('#developmentsSplide');
+        const navbarEl = document.querySelector('.navbar');
+        let topMouseActive = false;
+        let navInteractionActive = false;
+
+        const updateDevelopmentsNav = () => {
+            const mobileMenuOpen = !!document.querySelector('.navbar-collapse.show');
+            if (window.scrollY > 30 || topMouseActive || navInteractionActive || mobileMenuOpen) {
+                document.body.classList.add('developments-nav-visible');
+            } else {
+                document.body.classList.remove('developments-nav-visible');
+            }
+        };
+
+        if (hasDevelopments) {
+            document.body.classList.add('developments-immersive');
+            updateDevelopmentsNav();
+            window.addEventListener('scroll', updateDevelopmentsNav, { passive: true });
+            document.addEventListener('mousemove', function(event) {
+                topMouseActive = event.clientY <= 85;
+                updateDevelopmentsNav();
+            });
+            document.addEventListener('mouseleave', function() {
+                topMouseActive = false;
+                updateDevelopmentsNav();
+            });
+
+            if (navbarEl) {
+                navbarEl.addEventListener('mouseenter', function() {
+                    navInteractionActive = true;
+                    updateDevelopmentsNav();
+                });
+                navbarEl.addEventListener('mouseleave', function() {
+                    navInteractionActive = false;
+                    updateDevelopmentsNav();
+                });
+                navbarEl.addEventListener('shown.bs.dropdown', function() {
+                    navInteractionActive = true;
+                    updateDevelopmentsNav();
+                });
+                navbarEl.addEventListener('hidden.bs.dropdown', function() {
+                    navInteractionActive = navbarEl.matches(':hover');
+                    updateDevelopmentsNav();
+                });
+                const navbarCollapse = navbarEl.querySelector('.navbar-collapse');
+                if (navbarCollapse) {
+                    navbarCollapse.addEventListener('shown.bs.collapse', updateDevelopmentsNav);
+                    navbarCollapse.addEventListener('hidden.bs.collapse', updateDevelopmentsNav);
+                }
+            }
+        }
+
+        if (hasDevelopments) {
+            const splide = new Splide('#developmentsSplide', {
+                type: 'fade',
+                rewind: true,
+                autoplay: true,
+                interval: 6000,
+                pauseOnHover: true,
+                pauseOnFocus: false,
+                speed: 1000,
+                arrows: true,
+                pagination: true,
+                keyboard: 'global',
+                lazyLoad: 'nearby',
+                accessibility: {
+                    prevSlideMessage: 'Desarrollo anterior',
+                    nextSlideMessage: 'Siguiente desarrollo',
+                    paginationBulletMessage: 'Ir al desarrollo {{index}}',
+                },
+            });
+            splide.mount();
+        }
     });
 </script>
 {% endblock %}

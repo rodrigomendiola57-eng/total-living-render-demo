@@ -1,28 +1,28 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Contacto - Total Living{% endblock %}
+{% block title %}{% trans "Contacto" %} - Total Living{% endblock %}
 
 {% block content %}
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="text-center mb-5">
-                <h1 class="display-5 fw-bold">Contáctanos</h1>
-                <p class="lead text-muted">Estamos aquí para ayudarte a encontrar la propiedad perfecta</p>
+                <h1 class="display-5 fw-bold">{% trans "Contáctanos" %}</h1>
+                <p class="lead text-muted">{% trans "Estamos aquí para ayudarte a encontrar la propiedad perfecta" %}</p>
             </div>
             
             {% if property %}
             <div class="alert alert-info mb-4">
                 <h5 class="alert-heading">
-                    <i class="bi bi-house-door"></i> Consulta sobre: {{ property.title }}
+                    <i class="bi bi-house-door"></i> {% trans "Consulta sobre:" %} {{ property.title }}
                 </h5>
                 <p class="mb-0">
-                    <strong>Precio:</strong> {{ property.get_price_display }}<br>
-                    <strong>Ubicación:</strong> {{ property.city }}, {{ property.state }}
+                    <strong>{% trans "Precio:" %}</strong> {{ property.get_price_display }}<br>
+                    <strong>{% trans "Ubicación:" %}</strong> {{ property.city }}, {{ property.state }}
                 </p>
                 <a href="{% url 'properties:detail' property.pk %}" class="btn btn-sm btn-outline-primary mt-2">
-                    Ver Detalles de la Propiedad
+                    {% trans "Ver Detalles de la Propiedad" %}
                 </a>
             </div>
             {% endif %}
@@ -31,6 +31,9 @@
                 <div class="card-body p-4">
                     <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
+                        <input type="text" name="website" tabindex="-1" autocomplete="off"
+                               style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;"
+                               aria-hidden="true">
                         
                         {% if property %}
                         <input type="hidden" name="property_id" value="{{ property.pk }}">
@@ -39,53 +42,53 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">
-                                    Nombre Completo <span class="text-danger">*</span>
+                                    {% trans "Nombre Completo" %} <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" class="form-control" id="name" name="name" 
                                        required value="{% if form_data %}{{ form_data.name }}{% endif %}">
                                 <div class="invalid-feedback">
-                                    Por favor ingresa tu nombre.
+                                    {% trans "Por favor ingresa tu nombre." %}
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">
-                                    Correo Electrónico <span class="text-danger">*</span>
+                                    {% trans "Correo Electrónico" %} <span class="text-danger">*</span>
                                 </label>
                                 <input type="email" class="form-control" id="email" name="email" 
                                        required value="{% if form_data %}{{ form_data.email }}{% endif %}">
                                 <div class="invalid-feedback">
-                                    Por favor ingresa un correo electrónico válido.
+                                    {% trans "Por favor ingresa un correo electrónico válido." %}
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Teléfono</label>
+                            <label for="phone" class="form-label">{% trans "Teléfono" %}</label>
                             <input type="tel" class="form-control" id="phone" name="phone" 
-                                   placeholder="Opcional" value="{% if form_data %}{{ form_data.phone }}{% endif %}">
+                                   placeholder="{% trans 'Opcional' %}" value="{% if form_data %}{{ form_data.phone }}{% endif %}">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="subject" class="form-label">Asunto</label>
+                            <label for="subject" class="form-label">{% trans "Asunto" %}</label>
                             <input type="text" class="form-control" id="subject" name="subject" 
-                                   placeholder="Opcional" 
-                                   value="{% if form_data %}{{ form_data.subject }}{% else %}{% if property %}Consulta sobre {{ property.title }}{% endif %}{% endif %}">
+                                   placeholder="{% trans 'Opcional' %}" 
+                                   value="{% if form_data %}{{ form_data.subject }}{% else %}{% if property %}{% trans 'Consulta sobre' %} {{ property.title }}{% endif %}{% endif %}">
                         </div>
                         
                         <div class="mb-3">
                             <label for="message" class="form-label">
-                                Mensaje <span class="text-danger">*</span>
+                                {% trans "Mensaje" %} <span class="text-danger">*</span>
                             </label>
                             <textarea class="form-control" id="message" name="message" rows="6" 
-                                      required>{% if form_data %}{{ form_data.message }}{% elif property %}Me interesa obtener más información sobre esta propiedad.{% endif %}</textarea>
+                                      required>{% if form_data %}{{ form_data.message }}{% elif property %}{% trans "Me interesa obtener más información sobre esta propiedad." %}{% endif %}</textarea>
                             <div class="invalid-feedback">
-                                Por favor ingresa tu mensaje.
+                                {% trans "Por favor ingresa tu mensaje." %}
                             </div>
                         </div>
                         
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-send"></i> Enviar Mensaje
+                                <i class="bi bi-send"></i> {% trans "Enviar Mensaje" %}
                             </button>
                         </div>
                     </form>
@@ -95,7 +98,7 @@
             <div class="text-center mt-4">
                 <p class="text-muted">
                     <i class="bi bi-shield-check"></i> 
-                    Tu información está segura y será usada únicamente para contactarte.
+                    {% trans "Tu información está segura y será usada únicamente para contactarte." %}
                 </p>
             </div>
         </div>

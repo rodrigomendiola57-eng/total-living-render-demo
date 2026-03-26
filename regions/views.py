@@ -1,10 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Count, Q
 from .models import Region
 
 def regions_list(request):
-    regions = Region.objects.filter(is_active=True)
+    regions = Region.objects.filter(is_active=True).annotate(
+        available_properties_count=Count(
+            'properties',
+            filter=Q(properties__status='disponible'),
+            distinct=True
+        )
+    )
     return render(request, 'regions/list.html', {'regions': regions})
 
 @login_required

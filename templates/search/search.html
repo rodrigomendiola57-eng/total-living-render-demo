@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Búsqueda Avanzada - Total Living{% endblock %}
+{% block title %}{% trans "Búsqueda Avanzada" %} - Total Living{% endblock %}
 
 {% block content %}
 <div class="container my-5">
     <div class="row">
         <div class="col-lg-12">
             <h1 class="mb-4">
-                <i class="bi bi-search"></i> Búsqueda Avanzada
+                <i class="bi bi-search"></i> {% trans "Búsqueda Avanzada" %}
             </h1>
         </div>
     </div>
@@ -18,22 +18,22 @@
         <div class="col-lg-4 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Búsqueda</h5>
+                    <h5 class="mb-0"><i class="bi bi-funnel"></i> {% trans "Filtros de Búsqueda" %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="get" action="{% url 'search:search' %}">
                         <!-- Búsqueda por texto -->
                         <div class="mb-3">
-                            <label for="q" class="form-label">Palabras clave</label>
+                            <label for="q" class="form-label">{% trans "Palabras clave" %}</label>
                             <input type="text" name="q" id="q" class="form-control" 
-                                   placeholder="Buscar..." value="{{ current_filters.q }}">
+                                   placeholder="{% trans 'Buscar...' %}" value="{{ current_filters.q }}">
                         </div>
                         
                         <!-- Tipo de propiedad -->
                         <div class="mb-3">
-                            <label for="property_type" class="form-label">Tipo de Propiedad</label>
+                            <label for="property_type" class="form-label">{% trans "Tipo de Propiedad" %}</label>
                             <select name="property_type" id="property_type" class="form-select">
-                                <option value="">Todos</option>
+                                <option value="">{% trans "Todos" %}</option>
                                 {% for value, label in property_types %}
                                 <option value="{{ value }}" 
                                         {% if current_filters.property_type == value %}selected{% endif %}>
@@ -45,9 +45,9 @@
                         
                         <!-- Tipo de operación -->
                         <div class="mb-3">
-                            <label for="operation_type" class="form-label">Operación</label>
+                            <label for="operation_type" class="form-label">{% trans "Operación" %}</label>
                             <select name="operation_type" id="operation_type" class="form-select">
-                                <option value="">Todas</option>
+                                <option value="">{% trans "Todas" %}</option>
                                 {% for value, label in operation_types %}
                                 <option value="{{ value }}" 
                                         {% if current_filters.operation_type == value %}selected{% endif %}>
@@ -59,9 +59,9 @@
                         
                         <!-- Ciudad -->
                         <div class="mb-3">
-                            <label for="city" class="form-label">Ciudad</label>
+                            <label for="city" class="form-label">{% trans "Ciudad" %}</label>
                             <input type="text" name="city" id="city" class="form-control" 
-                                   list="cities" placeholder="Seleccionar ciudad..." 
+                                   list="cities" placeholder="{% trans 'Seleccionar ciudad...' %}" 
                                    value="{{ current_filters.city }}">
                             <datalist id="cities">
                                 {% for city in cities %}
@@ -72,68 +72,68 @@
                         
                         <!-- Rango de precio -->
                         <div class="mb-3">
-                            <label class="form-label">Rango de Precio</label>
+                            <label class="form-label">{% trans "Rango de Precio" %}</label>
                             <div class="row g-2">
                                 <div class="col-6">
                                     <input type="number" name="min_price" class="form-control" 
-                                           placeholder="Mínimo" value="{{ current_filters.min_price }}">
+                                           placeholder="{% trans 'Mínimo' %}" value="{{ current_filters.min_price }}">
                                 </div>
                                 <div class="col-6">
                                     <input type="number" name="max_price" class="form-control" 
-                                           placeholder="Máximo" value="{{ current_filters.max_price }}">
+                                           placeholder="{% trans 'Máximo' %}" value="{{ current_filters.max_price }}">
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Recámaras -->
                         <div class="mb-3">
-                            <label for="min_bedrooms" class="form-label">Mín. Recámaras</label>
+                            <label for="min_bedrooms" class="form-label">{% trans "Mín. Recámaras" %}</label>
                             <input type="number" name="min_bedrooms" id="min_bedrooms" 
                                    class="form-control" min="0" value="{{ current_filters.min_bedrooms }}">
                         </div>
                         
                         <!-- Baños -->
                         <div class="mb-3">
-                            <label for="min_bathrooms" class="form-label">Mín. Baños</label>
+                            <label for="min_bathrooms" class="form-label">{% trans "Mín. Baños" %}</label>
                             <input type="number" name="min_bathrooms" id="min_bathrooms" 
                                    class="form-control" min="0" value="{{ current_filters.min_bathrooms }}">
                         </div>
                         
                         <!-- Área mínima -->
                         <div class="mb-3">
-                            <label for="min_area" class="form-label">Área Mínima (m²)</label>
+                            <label for="min_area" class="form-label">{% trans "Área Mínima (m²)" %}</label>
                             <input type="number" name="min_area" id="min_area" 
                                    class="form-control" min="0" step="0.01" value="{{ current_filters.min_area }}">
                         </div>
                         
                         <!-- Ordenamiento -->
                         <div class="mb-3">
-                            <label for="order_by" class="form-label">Ordenar por</label>
+                            <label for="order_by" class="form-label">{% trans "Ordenar por" %}</label>
                             <select name="order_by" id="order_by" class="form-select">
                                 <option value="-created_at" {% if current_filters.order_by == '-created_at' %}selected{% endif %}>
-                                    Más recientes
+                                    {% trans "Más recientes" %}
                                 </option>
                                 <option value="price" {% if current_filters.order_by == 'price' %}selected{% endif %}>
-                                    Precio: Menor a Mayor
+                                    {% trans "Precio: Menor a Mayor" %}
                                 </option>
                                 <option value="-price" {% if current_filters.order_by == '-price' %}selected{% endif %}>
-                                    Precio: Mayor a Menor
+                                    {% trans "Precio: Mayor a Menor" %}
                                 </option>
                                 <option value="area" {% if current_filters.order_by == 'area' %}selected{% endif %}>
-                                    Área: Menor a Mayor
+                                    {% trans "Área: Menor a Mayor" %}
                                 </option>
                                 <option value="-area" {% if current_filters.order_by == '-area' %}selected{% endif %}>
-                                    Área: Mayor a Menor
+                                    {% trans "Área: Mayor a Menor" %}
                                 </option>
                             </select>
                         </div>
                         
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-search"></i> Buscar
+                                <i class="bi bi-search"></i> {% trans "Buscar" %}
                             </button>
                             <a href="{% url 'search:search' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                                <i class="bi bi-arrow-counterclockwise"></i> {% trans "Limpiar" %}
                             </a>
                         </div>
                     </form>
@@ -146,7 +146,7 @@
             {% if current_filters.q or current_filters.property_type or current_filters.operation_type or current_filters.city %}
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i> 
-                Se encontraron <strong>{{ total_results }}</strong> propiedades
+                {% trans "Se encontraron" %} <strong>{{ total_results }}</strong> {% trans "propiedades" %}
             </div>
             {% endif %}
             
@@ -162,7 +162,7 @@
                                  alt="{{ property.title }}">
                             {% if property.is_featured %}
                             <span class="badge bg-warning text-dark property-badge">
-                                <i class="bi bi-star-fill"></i> Destacada
+                                <i class="bi bi-star-fill"></i> {% trans "Destacada" %}
                             </span>
                             {% endif %}
                         </div>
@@ -191,13 +191,13 @@
                                 {% if property.bedrooms > 0 %}
                                 <div class="feature-item">
                                     <i class="bi bi-door-open"></i>
-                                    <span>{{ property.bedrooms }} Rec.</span>
+                                    <span>{{ property.bedrooms }} {% trans "Rec." %}</span>
                                 </div>
                                 {% endif %}
                                 {% if property.bathrooms > 0 %}
                                 <div class="feature-item">
                                     <i class="bi bi-droplet"></i>
-                                    <span>{{ property.bathrooms }} Baños</span>
+                                    <span>{{ property.bathrooms }} {% trans "Baños" %}</span>
                                 </div>
                                 {% endif %}
                                 {% if property.area %}
@@ -214,7 +214,7 @@
                                     <i class="bi bi-geo-alt"></i> {{ property.city }}, {{ property.state }}
                                 </div>
                                 <a href="{% url 'properties:detail' property.pk %}" class="btn btn-primary w-100">
-                                    Ver Detalles <i class="bi bi-arrow-right"></i>
+                                    {% trans "Ver Detalles" %} <i class="bi bi-arrow-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -237,7 +237,7 @@
                     
                     <li class="page-item active">
                         <span class="page-link">
-                            Página {{ properties.number }} de {{ properties.paginator.num_pages }}
+                            {% trans "Página" %} {{ properties.number }} {% trans "de" %} {{ properties.paginator.num_pages }}
                         </span>
                     </li>
                     
@@ -255,10 +255,10 @@
             {% else %}
             <div class="text-center py-5">
                 <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-                <h3 class="mt-3">No se encontraron propiedades</h3>
-                <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+                <h3 class="mt-3">{% trans "No se encontraron propiedades" %}</h3>
+                <p class="text-muted">{% trans "Intenta ajustar los filtros de búsqueda" %}</p>
                 <a href="{% url 'properties:list' %}" class="btn btn-primary">
-                    Ver Todas las Propiedades
+                    {% trans "Ver Todas las Propiedades" %}
                 </a>
             </div>
             {% endif %}

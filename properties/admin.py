@@ -30,6 +30,8 @@ class PropertyAdmin(admin.ModelAdmin):
         'city',
         'price_display',
         'status',
+        'is_advisor_exclusive',
+        'exclusive_advisor',
         'is_featured',
         'created_at',
         'image_preview'
@@ -41,6 +43,8 @@ class PropertyAdmin(admin.ModelAdmin):
         'status',
         'is_featured',
         'is_new',
+        'is_advisor_exclusive',
+        'exclusive_advisor',
         'city',
         'state',
         'created_at'
@@ -91,7 +95,7 @@ class PropertyAdmin(admin.ModelAdmin):
             )
         }),
         ('Opciones', {
-            'fields': ('is_featured', 'is_new', 'published_at')
+            'fields': ('is_featured', 'is_new', 'is_advisor_exclusive', 'exclusive_advisor', 'financing_options', 'published_at')
         }),
         ('Fechas', {
             'fields': ('created_at', 'updated_at'),

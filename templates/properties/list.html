@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Propiedades - Total Living{% endblock %}
+{% block title %}{% trans "Propiedades" %} - Total Living{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -88,7 +88,7 @@
     <div class="container">
         <div class="text-center mb-3">
             <h1 class="display-5 fw-light text-white" style="font-family: 'Raleway', sans-serif; letter-spacing: 3px;">
-                {% if current_filters.tipo == 'departamento' %}Condominios{% elif current_filters.tipo == 'casa' %}Casas{% elif current_filters.tipo == 'terreno' %}Terrenos{% else %}Propiedades{% endif %} en Venta
+                {% if current_filters.tipo == 'departamento' %}{% trans "Condominios" %}{% elif current_filters.tipo == 'casa' %}{% trans "Casas" %}{% elif current_filters.tipo == 'terreno' %}{% trans "Terrenos" %}{% else %}{% trans "Propiedades" %}{% endif %} {% trans "en Venta" %}
             </h1>
         </div>
         
@@ -96,26 +96,29 @@
         <div class="card border-0 shadow-lg" style="background: rgba(255,255,255,0.98);">
             <div class="card-body p-3">
                 <form method="get" class="row g-2">
+                    {% if current_filters.region %}
+                    <input type="hidden" name="region" value="{{ current_filters.region }}">
+                    {% endif %}
                     <div class="col-md-3">
                         <select name="tipo" class="form-select">
-                            <option value="">Todos los tipos</option>
-                            <option value="departamento" {% if current_filters.tipo == 'departamento' %}selected{% endif %}>Condominio</option>
-                            <option value="casa" {% if current_filters.tipo == 'casa' %}selected{% endif %}>Casa</option>
-                            <option value="terreno" {% if current_filters.tipo == 'terreno' %}selected{% endif %}>Terreno</option>
+                            <option value="">{% trans "Todos los tipos" %}</option>
+                            <option value="departamento" {% if current_filters.tipo == 'departamento' %}selected{% endif %}>{% trans "Condominio" %}</option>
+                            <option value="casa" {% if current_filters.tipo == 'casa' %}selected{% endif %}>{% trans "Casa" %}</option>
+                            <option value="terreno" {% if current_filters.tipo == 'terreno' %}selected{% endif %}>{% trans "Terreno" %}</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <select name="operacion" class="form-select">
-                            <option value="venta" {% if current_filters.operacion == 'venta' %}selected{% endif %}>Venta</option>
-                            <option value="renta">Renta</option>
+                            <option value="venta" {% if current_filters.operacion == 'venta' %}selected{% endif %}>{% trans "Venta" %}</option>
+                            <option value="renta">{% trans "Renta" %}</option>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <input type="text" name="ciudad" class="form-control" placeholder="Ciudad..." value="{{ current_filters.ciudad }}">
+                        <input type="text" name="ciudad" class="form-control" placeholder="{% trans 'Ciudad...' %}" value="{{ current_filters.ciudad }}">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-search"></i> Buscar
+                            <i class="bi bi-search"></i> {% trans "Buscar" %}
                         </button>
                     </div>
                 </form>
@@ -130,7 +133,7 @@
     <div class="row mb-4">
         <div class="col">
             <p class="text-muted" style="font-family: 'Montserrat', sans-serif;">
-                Mostrando {{ properties.start_index }} - {{ properties.end_index }} de {{ properties.paginator.count }} propiedades
+                {% trans "Mostrando" %} {{ properties.start_index }} - {{ properties.end_index }} {% trans "de" %} {{ properties.paginator.count }} {% trans "propiedades" %}
             </p>
         </div>
     </div>
@@ -149,7 +152,7 @@
         <ul class="pagination justify-content-center">
             {% if properties.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ properties.previous_page_number }}{% if current_filters.tipo %}&tipo={{ current_filters.tipo }}{% endif %}{% if current_filters.operacion %}&operacion={{ current_filters.operacion }}{% endif %}{% if current_filters.ciudad %}&ciudad={{ current_filters.ciudad }}{% endif %}">
+                <a class="page-link" href="?page={{ properties.previous_page_number }}{% if current_filters.tipo %}&tipo={{ current_filters.tipo }}{% endif %}{% if current_filters.operacion %}&operacion={{ current_filters.operacion }}{% endif %}{% if current_filters.ciudad %}&ciudad={{ current_filters.ciudad }}{% endif %}{% if current_filters.region %}&region={{ current_filters.region }}{% endif %}">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
@@ -161,7 +164,7 @@
             
             {% if properties.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ properties.next_page_number }}{% if current_filters.tipo %}&tipo={{ current_filters.tipo }}{% endif %}{% if current_filters.operacion %}&operacion={{ current_filters.operacion }}{% endif %}{% if current_filters.ciudad %}&ciudad={{ current_filters.ciudad }}{% endif %}">
+                <a class="page-link" href="?page={{ properties.next_page_number }}{% if current_filters.tipo %}&tipo={{ current_filters.tipo }}{% endif %}{% if current_filters.operacion %}&operacion={{ current_filters.operacion }}{% endif %}{% if current_filters.ciudad %}&ciudad={{ current_filters.ciudad }}{% endif %}{% if current_filters.region %}&region={{ current_filters.region }}{% endif %}">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
@@ -173,10 +176,10 @@
     {% else %}
     <div class="text-center py-5">
         <i class="bi bi-inbox" style="font-size: 5rem; color: #ccc;"></i>
-        <h3 class="mt-4 fw-bold" style="font-family: 'Montserrat', sans-serif;">No hay propiedades disponibles</h3>
-        <p class="text-muted" style="font-family: 'Montserrat', sans-serif;">Próximamente agregaremos nuevas propiedades</p>
+        <h3 class="mt-4 fw-bold" style="font-family: 'Montserrat', sans-serif;">{% trans "No hay propiedades disponibles" %}</h3>
+        <p class="text-muted" style="font-family: 'Montserrat', sans-serif;">{% trans "Próximamente agregaremos nuevas propiedades" %}</p>
         <a href="{% url 'home' %}" class="btn btn-primary mt-3">
-            <i class="bi bi-house"></i> Volver al Inicio
+            <i class="bi bi-house"></i> {% trans "Volver al Inicio" %}
         </a>
     </div>
     {% endif %}

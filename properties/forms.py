@@ -1,9 +1,15 @@
 from django import forms
 from .models import Property, PropertyImage, PropertyFeature
+from .image_security import validate_image_upload
 
 
 class PropertyForm(forms.ModelForm):
     """Formulario para crear/editar propiedades"""
+    financing_options = forms.MultipleChoiceField(
+        required=False,
+        choices=Property.FINANCING_CHOICES,
+        widget=forms.CheckboxSelectMultiple
+    )
     
     class Meta:
         model = Property
@@ -12,7 +18,7 @@ class PropertyForm(forms.ModelForm):
             'price', 'currency', 'address', 'city', 'state', 'zip_code', 'country',
             'latitude', 'longitude', 'bedrooms', 'bathrooms', 'parking_spaces',
             'area', 'construction_area', 'lot_area', 'floors', 'year_built',
-            'is_featured', 'is_new', 'published_at'
+            'is_featured', 'is_new', 'is_advisor_exclusive', 'exclusive_advisor', 'financing_options', 'published_at'
         ]
         widgets = {
             'title': forms.TextInput(attrs={
@@ -91,6 +97,8 @@ class PropertyForm(forms.ModelForm):
             }),
             'is_featured': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_new': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_advisor_exclusive': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'exclusive_advisor': forms.Select(attrs={'class': 'form-select'}),
             'published_at': forms.DateTimeInput(attrs={
                 'class': 'form-control',
                 'type': 'datetime-local'
@@ -100,6 +108,11 @@ class PropertyForm(forms.ModelForm):
             'latitude': 'Coordenada GPS (opcional)',
             'longitude': 'Coordenada GPS (opcional)',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['financing_options'].initial = self.instance.financing_options or []
 
 
 class PropertyImageForm(forms.ModelForm):
@@ -123,3 +136,9 @@ class PropertyImageForm(forms.ModelForm):
                 'min': '0'
             }),
         }
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            validate_image_upload(image)
+        return image

@@ -1,0 +1,17 @@
+"""
+Backends S3 separados para static y media.
+Mismo bucket, prefijos distintos.
+"""
+from storages.backends.s3boto3 import S3Boto3Storage
+
+
+class StaticStorage(S3Boto3Storage):
+    location = "static"
+    default_acl = None
+    file_overwrite = True
+
+
+class MediaStorage(S3Boto3Storage):
+    location = "media"
+    default_acl = None
+    file_overwrite = False

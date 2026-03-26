@@ -2,10 +2,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator
-from PIL import Image
-from io import BytesIO
-from django.core.files.uploadedfile import InMemoryUploadedFile
-import sys
+from django.conf import settings
+from .image_security import validate_image_upload, optimize_image_for_storage
 
 
 class PropertyType(models.TextChoices):
@@ -49,6 +47,32 @@ class PropertyOperation(models.TextChoices):
 
 class Property(models.Model):
     """Modelo principal para propiedades inmobiliarias"""
+    FINANCING_BANK = 'credito_bancario'
+    FINANCING_INFONAVIT = 'infonavit'
+    FINANCING_FOVISSSTE = 'fovissste'
+    FINANCING_COFINAVIT = 'cofinavit'
+    FINANCING_APOYO_INFONAVIT = 'apoyo_infonavit'
+    FINANCING_INFONAVIT_TOTAL = 'infonavit_total'
+    FINANCING_FOVISSSTE_PARA_TODOS = 'fovissste_para_todos'
+    FINANCING_ISSFAM = 'issfam'
+    FINANCING_COOPERATIVE = 'cooperativa_caja_popular'
+    FINANCING_SOFOM = 'sofom'
+    FINANCING_LEASE_OPTION = 'arrendamiento_opcion_compra'
+    FINANCING_OWNER_DIRECT = 'financiamiento_directo_propietario'
+    FINANCING_CHOICES = [
+        (FINANCING_BANK, 'Crédito hipotecario bancario'),
+        (FINANCING_INFONAVIT, 'INFONAVIT'),
+        (FINANCING_FOVISSSTE, 'FOVISSSTE'),
+        (FINANCING_COFINAVIT, 'COFINAVIT'),
+        (FINANCING_APOYO_INFONAVIT, 'Apoyo Infonavit'),
+        (FINANCING_INFONAVIT_TOTAL, 'Infonavit Total'),
+        (FINANCING_FOVISSSTE_PARA_TODOS, 'FOVISSSTE para Todos'),
+        (FINANCING_ISSFAM, 'ISSFAM'),
+        (FINANCING_COOPERATIVE, 'Cooperativa / Caja Popular'),
+        (FINANCING_SOFOM, 'SOFOM / financiera no bancaria'),
+        (FINANCING_LEASE_OPTION, 'Arrendamiento con opción a compra'),
+        (FINANCING_OWNER_DIRECT, 'Financiamiento directo con propietario'),
+    ]
     
     # Información básica
     title = models.CharField(
@@ -118,6 +142,14 @@ class Property(models.Model):
     city = models.CharField(
         max_length=100,
         verbose_name='Ciudad'
+    )
+    region = models.ForeignKey(
+        'regions.Region',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='properties',
+        verbose_name='Región'
     )
     state = models.CharField(
         max_length=100,
@@ -280,6 +312,27 @@ class Property(models.Model):
     service_hidroneumatico = models.BooleanField(default=False, verbose_name='Hidroneumático')
     service_aire = models.BooleanField(default=False, verbose_name='Aire Acondicionado')
     service_boiler = models.BooleanField(default=False, verbose_name='Boiler')
+
+    # Gestión comercial interna (solo panel/admin)
+    is_advisor_exclusive = models.BooleanField(
+        default=False,
+        verbose_name='Exclusiva de asesor',
+        help_text='Solo visible para administración/panel interno'
+    )
+    exclusive_advisor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='exclusive_properties',
+        verbose_name='Asesor responsable de la exclusiva'
+    )
+    financing_options = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Opciones de financiamiento',
+        help_text='Solo visible para administración/panel interno'
+    )
     
     # Información adicional
     is_featured = models.BooleanField(
@@ -336,11 +389,21 @@ class Property(models.Model):
     
     def get_main_image(self):
         """Obtener la imagen principal de la propiedad"""
+        prefetched = getattr(self, '_prefetched_objects_cache', {}).get('images')
+        if prefetched is not None:
+            for image in prefetched:
+                if image.is_main:
+                    return image
+            return prefetched[0] if prefetched else None
         return self.images.filter(is_main=True).first() or self.images.first()
     
     def get_price_display(self):
         """Formatear el precio para mostrar"""
         return f"${self.price:,.2f} {self.currency}"
+
+    def get_financing_options_display(self):
+        labels = dict(self.FINANCING_CHOICES)
+        return [labels.get(code, code) for code in (self.financing_options or [])]
 
 
 class PropertyImage(models.Model):
@@ -385,6 +448,19 @@ class PropertyImage(models.Model):
     
     def __str__(self):
         return f"Imagen de {self.property.title}"
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            validate_image_upload(self.image)
+            self.image = optimize_image_for_storage(self.image, max_width=1920)
+
+        if self.is_main and self.property_id:
+            PropertyImage.objects.filter(
+                property_id=self.property_id,
+                is_main=True,
+            ).exclude(pk=self.pk).update(is_main=False)
+
+        super().save(*args, **kwargs)
 
 
 class CarouselSlide(models.Model):
@@ -447,43 +523,11 @@ class CarouselSlide(models.Model):
         return f"{self.title} ({'Activo' if self.is_active else 'Inactivo'})"
     
     def save(self, *args, **kwargs):
-        """Asegurar que solo haya una imagen principal y optimizar imagen"""
-        if self.is_main:
-            PropertyImage.objects.filter(
-                property=self.property,
-                is_main=True
-            ).exclude(pk=self.pk).update(is_main=False)
-        
-        # Optimizar imagen antes de guardar
+        """Optimizar imagen antes de guardar."""
         if self.image:
-            img = Image.open(self.image)
-            
-            # Convertir a RGB si es necesario
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    img = img.convert('RGBA')
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
-                img = background
-            
-            # Redimensionar si es muy grande (máximo 1920x1080 para alta calidad)
-            max_size = (1920, 1080)
-            if img.size[0] > max_size[0] or img.size[1] > max_size[1]:
-                img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
-            # Guardar con alta calidad
-            output = BytesIO()
-            img.save(output, format='JPEG', quality=95, optimize=True)
-            output.seek(0)
-            
-            # Reemplazar el archivo
-            self.image = InMemoryUploadedFile(
-                output, 'ImageField',
-                f"{self.image.name.split('.')[0]}.jpg",
-                'image/jpeg',
-                sys.getsizeof(output), None
-            )
-        
+            validate_image_upload(self.image)
+            self.image = optimize_image_for_storage(self.image, max_width=1920)
+
         super().save(*args, **kwargs)
 
 

@@ -4,7 +4,9 @@ from . import views
 app_name = 'properties'
 
 urlpatterns = [
+    path('mapa/', views.properties_map, name='map'),
     path('', views.property_list, name='list'),
+    path('comprar/todas/', views.comprar_todas_list, name='comprar_todas'),
     path('departamentos/', views.departamentos_list, name='departamentos'),
     path('casas/', views.casas_list, name='casas'),
     path('terrenos/', views.terrenos_list, name='terrenos'),

@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: total-living-web
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: >
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn total_living.wsgi:application --log-file -
+    postDeployCommand: python manage.py migrate --noinput
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DJANGO_SETTINGS_MODULE
+        value: total_living.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: total-living-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: ${RENDER_EXTERNAL_HOSTNAME}
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://${RENDER_EXTERNAL_HOSTNAME}
+      - key: SECURE_SSL_REDIRECT
+        value: true
+      - key: SESSION_COOKIE_SECURE
+        value: true
+      - key: CSRF_COOKIE_SECURE
+        value: true
+      - key: SECURE_HSTS_SECONDS
+        value: 31536000
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: true
+      - key: SECURE_HSTS_PRELOAD
+        value: true
+      - key: USE_S3
+        value: false
+
+databases:
+  - name: total-living-db
+    databaseName: total_living
+    plan: free

@@ -2,10 +2,33 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from .models import Property, PropertyImage, PropertyFeature
 from .forms import PropertyForm, PropertyImageForm
+from regions.models import Region
+
+
+def properties_map(request):
+    """Mapa público con todas las propiedades disponibles que tengan coordenadas."""
+    props = Property.objects.filter(
+        status='disponible',
+        latitude__isnull=False,
+        longitude__isnull=False,
+    ).only('id', 'title', 'latitude', 'longitude', 'slug')
+    markers = []
+    for p in props:
+        markers.append({
+            'id': p.pk,
+            'title': p.title,
+            'lat': float(p.latitude),
+            'lng': float(p.longitude),
+            'url': p.get_absolute_url(),
+            'price': p.get_price_display(),
+        })
+    return render(request, 'properties/map.html', {'map_markers': markers})
 
 
 def property_list(request):
@@ -13,7 +36,7 @@ def property_list(request):
     from properties.models import PropertyType, PropertyOperation
     
     # Obtener todas las propiedades disponibles
-    properties = Property.objects.filter(status='disponible').order_by('-created_at')
+    properties = Property.objects.filter(status='disponible').prefetch_related('images').order_by('-created_at')
     
     # Filtros básicos
     property_type = request.GET.get('tipo', '')
@@ -51,16 +74,12 @@ def property_list(request):
     elif city:  # Mantener compatibilidad con búsquedas antiguas
         properties = properties.filter(city__icontains=city)
     if region:
-        # Buscar propiedades que tengan la región en la dirección o en regiones relacionadas
-        from regions.models import Region
-        try:
-            region_obj = Region.objects.filter(name__icontains=region, is_active=True).first()
-            if region_obj:
-                properties = properties.filter(address__icontains=region)
-            else:
-                properties = properties.filter(address__icontains=region)
-        except:
-            properties = properties.filter(address__icontains=region)
+        region_obj = Region.objects.filter(slug=region, is_active=True).first()
+        if region_obj:
+            properties = properties.filter(region=region_obj)
+        else:
+            # Compatibilidad con filtros antiguos por texto
+            properties = properties.filter(Q(address__icontains=region) | Q(city__icontains=region))
     
     # Aplicar filtros de precio
     if precio_min:
@@ -172,6 +191,7 @@ def property_list(request):
             'tipo': property_type,
             'operacion': operation_type,
             'ciudad': city,
+            'region': region,
         }
     }
     
@@ -187,7 +207,7 @@ def departamentos_list(request):
         status='disponible',
         property_type='departamento',
         operation_type__in=['venta', 'venta_renta']
-    )
+    ).prefetch_related('images')
     
     # Aplicar filtros adicionales
     city = request.GET.get('ciudad', '')
@@ -224,13 +244,281 @@ def departamentos_list(request):
     return render(request, 'properties/departamentos.html', context)
 
 
+def comprar_todas_list(request):
+    """Vista para listar todas las propiedades en venta."""
+    base_properties = Property.objects.filter(
+        status='disponible',
+        operation_type__in=['venta', 'venta_renta']
+    ).prefetch_related('images')
+    properties = base_properties
+
+    # Filtros principales
+    operation_type = request.GET.get('operacion', 'venta')
+    property_type = request.GET.get('tipo', '')
+    city = request.GET.get('ciudad', '')
+    state = request.GET.get('estado', '')
+    region_slug = request.GET.get('region', '')
+    precio_min = request.GET.get('precio_min', '')
+    precio_max = request.GET.get('precio_max', '')
+    sort_by = request.GET.get('orden', 'reciente')
+    view_mode = request.GET.get('vista', 'lista')
+    recamaras = request.GET.get('recamaras', '')
+    banos = request.GET.get('banos', '')
+    estacionamientos = request.GET.get('estacionamientos', '')
+    construccion_min = request.GET.get('construccion_min', '')
+    construccion_max = request.GET.get('construccion_max', '')
+    terreno_min = request.GET.get('terreno_min', '')
+    terreno_max = request.GET.get('terreno_max', '')
+    antiguedad = request.GET.get('antiguedad', '')
+    amueblado = request.GET.get('amueblado', '')
+    estudio = request.GET.get('estudio', '')
+
+    # Amenidades/atributos (checkboxes)
+    amenity_alberca = request.GET.get('amenity_alberca', '')
+    amenity_juegos = request.GET.get('amenity_juegos', '')
+    amenity_cancha_tenis = request.GET.get('amenity_cancha_tenis', '')
+    amenity_gimnasio = request.GET.get('amenity_gimnasio', '')
+    amenity_salon = request.GET.get('amenity_salon', '')
+    amenity_vigilancia = request.GET.get('amenity_vigilancia', '')
+    amenity_acceso = request.GET.get('amenity_acceso', '')
+    amenity_pet_friendly = request.GET.get('amenity_pet_friendly', '')
+    service_aire = request.GET.get('service_aire', '')
+    has_balcon = request.GET.get('has_balcon', '')
+    has_bodega = request.GET.get('has_bodega', '')
+    has_jardin = request.GET.get('has_jardin', '')
+    has_patio = request.GET.get('has_patio', '')
+    has_roof_garden = request.GET.get('has_roof_garden', '')
+
+    # Tipo de operación
+    if operation_type == 'renta':
+        properties = Property.objects.filter(
+            status='disponible',
+            operation_type__in=['renta', 'venta_renta']
+        ).prefetch_related('images')
+        base_properties = properties
+    elif operation_type == 'remate':
+        properties = properties.filter(
+            Q(title__icontains='remate') | Q(description__icontains='remate')
+        )
+    else:
+        operation_type = 'venta'
+
+    # Tipo de propiedad (incluye agrupadores para UI extendida)
+    if property_type == 'residencial':
+        properties = properties.filter(property_type__in=['casa', 'departamento', 'terreno', 'rancho'])
+    elif property_type == 'comercial':
+        properties = properties.filter(property_type__in=['local', 'oficina', 'bodega'])
+    elif property_type == 'industrial':
+        properties = properties.filter(property_type='bodega')
+    elif property_type:
+        properties = properties.filter(property_type=property_type)
+
+    if city:
+        properties = properties.filter(
+            Q(city__icontains=city) |
+            Q(address__icontains=city) |
+            Q(region__name__icontains=city)
+        )
+    if state:
+        properties = properties.filter(state__icontains=state)
+    if region_slug:
+        selected_region = Region.objects.filter(slug=region_slug, is_active=True).first()
+        if selected_region:
+            properties = properties.filter(region=selected_region)
+        else:
+            properties = properties.filter(
+                Q(region__name__icontains=region_slug) |
+                Q(address__icontains=region_slug) |
+                Q(city__icontains=region_slug)
+            )
+    if precio_min:
+        properties = properties.filter(price__gte=precio_min)
+    if precio_max:
+        properties = properties.filter(price__lte=precio_max)
+    if recamaras:
+        properties = properties.filter(bedrooms__gte=recamaras)
+    if banos:
+        properties = properties.filter(bathrooms__gte=banos)
+    if estacionamientos:
+        properties = properties.filter(parking_spaces__gte=estacionamientos)
+    if construccion_min:
+        properties = properties.filter(construction_area__gte=construccion_min)
+    if construccion_max:
+        properties = properties.filter(construction_area__lte=construccion_max)
+    if terreno_min:
+        properties = properties.filter(lot_area__gte=terreno_min)
+    if terreno_max:
+        properties = properties.filter(lot_area__lte=terreno_max)
+
+    # Antigüedad por rangos de año de construcción
+    current_year = timezone.now().year
+    if antiguedad == '0_5':
+        properties = properties.filter(year_built__gte=current_year - 5)
+    elif antiguedad == '5_10':
+        properties = properties.filter(year_built__gte=current_year - 10, year_built__lt=current_year - 5)
+    elif antiguedad == '10_20':
+        properties = properties.filter(year_built__gte=current_year - 20, year_built__lt=current_year - 10)
+    elif antiguedad == '20_plus':
+        properties = properties.filter(year_built__lt=current_year - 20)
+
+    # Estudio
+    if estudio:
+        properties = properties.filter(has_estudio=True)
+
+    # "Amueblado" (aproximación por texto)
+    if amueblado == 'si':
+        properties = properties.filter(
+            Q(title__icontains='amueblad') | Q(description__icontains='amueblad')
+        )
+    elif amueblado == 'no':
+        properties = properties.exclude(
+            Q(title__icontains='amueblad') | Q(description__icontains='amueblad')
+        )
+
+    # Amenidades / servicios / distribución
+    if amenity_alberca:
+        properties = properties.filter(amenity_alberca=True)
+    if amenity_juegos:
+        properties = properties.filter(amenity_juegos=True)
+    if amenity_cancha_tenis:
+        properties = properties.filter(amenity_cancha_tenis=True)
+    if amenity_gimnasio:
+        properties = properties.filter(Q(amenity_gimnasio=True) | Q(has_gimnasio=True))
+    if amenity_salon:
+        properties = properties.filter(amenity_salon=True)
+    if amenity_vigilancia:
+        properties = properties.filter(amenity_vigilancia=True)
+    if amenity_acceso:
+        properties = properties.filter(amenity_acceso=True)
+    if amenity_pet_friendly:
+        properties = properties.filter(amenity_pet_friendly=True)
+    if service_aire:
+        properties = properties.filter(service_aire=True)
+    if has_balcon:
+        properties = properties.filter(has_balcon=True)
+    if has_bodega:
+        properties = properties.filter(has_bodega=True)
+    if has_jardin:
+        properties = properties.filter(has_jardin=True)
+    if has_patio:
+        properties = properties.filter(has_patio=True)
+    if has_roof_garden:
+        properties = properties.filter(has_roof_garden=True)
+
+    if sort_by == 'precio_menor':
+        properties = properties.order_by('price', '-created_at')
+    elif sort_by == 'precio_mayor':
+        properties = properties.order_by('-price', '-created_at')
+    else:
+        sort_by = 'reciente'
+        properties = properties.order_by('-created_at')
+
+    # Marcadores del mapa para resultados filtrados (sin limitar por paginación)
+    map_markers = []
+    for prop in properties:
+        if prop.latitude is None or prop.longitude is None:
+            continue
+        main_image = prop.get_main_image()
+        map_markers.append({
+            'id': prop.pk,
+            'title': prop.title,
+            'lat': float(prop.latitude),
+            'lng': float(prop.longitude),
+            'url': prop.get_absolute_url(),
+            'price': prop.get_price_display(),
+            'image': main_image.image.url if main_image and main_image.image else '',
+        })
+
+    paginator = Paginator(properties, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    available_cities = list(
+        base_properties.exclude(city__isnull=True).exclude(city__exact='')
+        .order_by('city').values_list('city', flat=True).distinct()
+    )
+    mexico_states = [
+        'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas',
+        'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima', 'Durango',
+        'Estado de México', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco',
+        'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla',
+        'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora',
+        'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+    ]
+    db_states = list(
+        base_properties.exclude(state__isnull=True).exclude(state__exact='')
+        .order_by('state').values_list('state', flat=True).distinct()
+    )
+    available_states = sorted(set(mexico_states + db_states))
+    available_region_ids = list(
+        base_properties.exclude(region__isnull=True).values_list('region_id', flat=True).distinct()
+    )
+    available_regions = Region.objects.filter(
+        is_active=True,
+        id__in=available_region_ids
+    ).order_by('name')
+
+    context = {
+        'page_obj': page_obj,
+        'properties': page_obj,
+        'title': 'Propiedades en Venta',
+        'subtitle': 'Explora casas, departamentos, terrenos, locales y más',
+        'icon': 'grid-3x3-gap',
+        'available_cities': available_cities,
+        'available_states': available_states,
+        'available_regions': available_regions,
+        'current_filters': {
+            'tipo': property_type,
+            'operacion': operation_type,
+            'ciudad': city,
+            'estado': state,
+            'region': region_slug,
+            'precio_min': precio_min,
+            'precio_max': precio_max,
+            'orden': sort_by,
+            'vista': 'mapa' if view_mode == 'mapa' else 'lista',
+            'recamaras': recamaras,
+            'banos': banos,
+            'estacionamientos': estacionamientos,
+            'construccion_min': construccion_min,
+            'construccion_max': construccion_max,
+            'terreno_min': terreno_min,
+            'terreno_max': terreno_max,
+            'antiguedad': antiguedad,
+            'amueblado': amueblado,
+            'estudio': estudio,
+            'amenity_alberca': amenity_alberca,
+            'amenity_juegos': amenity_juegos,
+            'amenity_cancha_tenis': amenity_cancha_tenis,
+            'amenity_gimnasio': amenity_gimnasio,
+            'amenity_salon': amenity_salon,
+            'amenity_vigilancia': amenity_vigilancia,
+            'amenity_acceso': amenity_acceso,
+            'amenity_pet_friendly': amenity_pet_friendly,
+            'service_aire': service_aire,
+            'has_balcon': has_balcon,
+            'has_bodega': has_bodega,
+            'has_jardin': has_jardin,
+            'has_patio': has_patio,
+            'has_roof_garden': has_roof_garden,
+        }
+    }
+    context['map_markers'] = map_markers
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        query_params.pop('page')
+    context['filter_query'] = query_params.urlencode()
+
+    return render(request, 'properties/categoria.html', context)
+
+
 def casas_list(request):
     """Vista para listar solo casas en venta"""
     properties = Property.objects.filter(
         status='disponible',
         property_type='casa',
         operation_type__in=['venta', 'venta_renta']
-    )
+    ).prefetch_related('images')
     
     # Aplicar filtros
     city = request.GET.get('ciudad', '')
@@ -273,7 +561,7 @@ def terrenos_list(request):
         status='disponible',
         property_type='terreno',
         operation_type__in=['venta', 'venta_renta']
-    )
+    ).prefetch_related('images')
     
     # Aplicar filtros
     city = request.GET.get('ciudad', '')
@@ -317,7 +605,7 @@ def locales_list(request):
         status='disponible',
         property_type='local',
         operation_type__in=['venta', 'venta_renta']
-    )
+    ).prefetch_related('images')
     
     # Aplicar filtros
     city = request.GET.get('ciudad', '')
@@ -357,23 +645,30 @@ def locales_list(request):
 
 def renta_list(request):
     """Vista para listar todas las propiedades en renta"""
-    properties = Property.objects.filter(
+    base_properties = Property.objects.filter(
         status='disponible',
         operation_type__in=['renta', 'venta_renta']
-    )
+    ).prefetch_related('images')
+    properties = base_properties
     
     # Aplicar filtros
     property_type = request.GET.get('tipo', '')
     city = request.GET.get('ciudad', '')
     precio_min = request.GET.get('precio_min', '')
     precio_max = request.GET.get('precio_max', '')
+    sort_by = request.GET.get('orden', 'reciente')
+    view_mode = request.GET.get('vista', 'lista')
     recamaras = request.GET.get('recamaras', '')
     banos = request.GET.get('banos', '')
     
     if property_type:
         properties = properties.filter(property_type=property_type)
     if city:
-        properties = properties.filter(city__icontains=city)
+        properties = properties.filter(
+            Q(city__icontains=city) |
+            Q(address__icontains=city) |
+            Q(region__name__icontains=city)
+        )
     if precio_min:
         properties = properties.filter(price__gte=precio_min)
     if precio_max:
@@ -383,7 +678,29 @@ def renta_list(request):
     if banos:
         properties = properties.filter(bathrooms__gte=banos)
     
-    properties = properties.order_by('-created_at')
+    if sort_by == 'precio_menor':
+        properties = properties.order_by('price', '-created_at')
+    elif sort_by == 'precio_mayor':
+        properties = properties.order_by('-price', '-created_at')
+    else:
+        sort_by = 'reciente'
+        properties = properties.order_by('-created_at')
+
+    # Marcadores del mapa para resultados filtrados (sin limitar por paginación)
+    map_markers = []
+    for prop in properties:
+        if prop.latitude is None or prop.longitude is None:
+            continue
+        main_image = prop.get_main_image()
+        map_markers.append({
+            'id': prop.pk,
+            'title': prop.title,
+            'lat': float(prop.latitude),
+            'lng': float(prop.longitude),
+            'url': prop.get_absolute_url(),
+            'price': prop.get_price_display(),
+            'image': main_image.image.url if main_image and main_image.image else '',
+        })
     
     paginator = Paginator(properties, 12)
     page_number = request.GET.get('page')
@@ -396,17 +713,70 @@ def renta_list(request):
         'subtitle': 'Encuentra tu próximo hogar',
         'icon': 'key',
         'operation': 'renta',
+        'available_cities': list(
+            base_properties.exclude(city__isnull=True).exclude(city__exact='')
+            .order_by('city').values_list('city', flat=True).distinct()
+        ),
+        'available_states': sorted(set([
+            'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas',
+            'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima', 'Durango',
+            'Estado de México', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco',
+            'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla',
+            'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora',
+            'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+        ] + list(
+            base_properties.exclude(state__isnull=True).exclude(state__exact='')
+            .order_by('state').values_list('state', flat=True).distinct()
+        ))),
+        'available_regions': Region.objects.filter(
+            is_active=True,
+            id__in=list(
+                base_properties.exclude(region__isnull=True).values_list('region_id', flat=True).distinct()
+            )
+        ).order_by('name'),
         'current_filters': {
             'tipo': property_type,
+            'operacion': 'renta',
             'ciudad': city,
             'precio_min': precio_min,
             'precio_max': precio_max,
+            'orden': sort_by,
+            'vista': 'mapa' if view_mode == 'mapa' else 'lista',
             'recamaras': recamaras,
             'banos': banos,
+            'estado': '',
+            'region': '',
+            'estacionamientos': '',
+            'construccion_min': '',
+            'construccion_max': '',
+            'terreno_min': '',
+            'terreno_max': '',
+            'antiguedad': '',
+            'amueblado': '',
+            'estudio': '',
+            'amenity_alberca': '',
+            'amenity_juegos': '',
+            'amenity_cancha_tenis': '',
+            'amenity_gimnasio': '',
+            'amenity_salon': '',
+            'amenity_vigilancia': '',
+            'amenity_acceso': '',
+            'amenity_pet_friendly': '',
+            'service_aire': '',
+            'has_balcon': '',
+            'has_bodega': '',
+            'has_jardin': '',
+            'has_patio': '',
+            'has_roof_garden': '',
         }
     }
-    
-    return render(request, 'properties/renta.html', context)
+    context['map_markers'] = map_markers
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        query_params.pop('page')
+    context['filter_query'] = query_params.urlencode()
+
+    return render(request, 'properties/categoria.html', context)
 
 
 def renta_departamentos_list(request):
@@ -415,7 +785,7 @@ def renta_departamentos_list(request):
         status='disponible',
         property_type='departamento',
         operation_type__in=['renta', 'venta_renta']
-    )
+    ).prefetch_related('images')
     
     # Aplicar filtros
     city = request.GET.get('ciudad', '')
@@ -467,7 +837,7 @@ def renta_casas_list(request):
         status='disponible',
         property_type='casa',
         operation_type__in=['renta', 'venta_renta']
-    )
+    ).prefetch_related('images')
     
     # Aplicar filtros
     city = request.GET.get('ciudad', '')
@@ -518,7 +888,7 @@ def renta_locales_list(request):
         status='disponible',
         property_type='local',
         operation_type__in=['renta', 'venta_renta']
-    )
+    ).prefetch_related('images')
     
     # Aplicar filtros
     city = request.GET.get('ciudad', '')
@@ -579,7 +949,7 @@ def property_detail(request, pk):
         city=property_obj.city,
         property_type=property_obj.property_type,
         status='disponible'
-    ).exclude(pk=pk)[:4]
+    ).exclude(pk=pk).prefetch_related('images')[:4]
     
     context = {
         'property': property_obj,
@@ -597,13 +967,23 @@ def is_staff_user(user):
 
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def add_property(request):
     """Vista para agregar una nueva propiedad (solo administradores)"""
     
     if request.method == 'POST':
         try:
             # Crear propiedad directamente desde POST
+            region_id = request.POST.get('region')
+            selected_region = Region.objects.filter(pk=region_id, is_active=True).first() if region_id else None
+
+            is_advisor_exclusive = 'is_advisor_exclusive' in request.POST
+            selected_advisor = get_user_model().objects.filter(
+                pk=request.POST.get('exclusive_advisor'),
+                is_staff=True,
+                is_active=True
+            ).first() if request.POST.get('exclusive_advisor') else None
+
             property_obj = Property(
                 title=request.POST.get('title'),
                 description=request.POST.get('description'),
@@ -614,6 +994,7 @@ def add_property(request):
                 currency='MXN',
                 address=request.POST.get('address'),
                 city=request.POST.get('city'),
+                region=selected_region,
                 state=request.POST.get('state'),
                 zip_code=request.POST.get('zip_code', ''),
                 country='México',
@@ -635,6 +1016,9 @@ def add_property(request):
                 maintenance_fee=float(request.POST.get('maintenance_fee')) if request.POST.get('maintenance_fee') else None,
                 is_featured='is_featured' in request.POST,
                 is_new='is_new' in request.POST,
+                is_advisor_exclusive=is_advisor_exclusive,
+                exclusive_advisor=selected_advisor if is_advisor_exclusive else None,
+                financing_options=request.POST.getlist('financing_options'),
                 published_at=timezone.now(),
                 # Distribución
                 has_sala='has_sala' in request.POST,
@@ -703,125 +1087,34 @@ def add_property(request):
             
         except Exception as e:
             messages.error(request, f'Error al crear la propiedad: {str(e)}')
-            return render(request, 'properties/add_property.html', {'title': 'Agregar Nueva Propiedad'})
+            regions = Region.objects.filter(is_active=True).order_by('order', 'name')
+            return render(request, 'properties/add_property.html', {
+                'title': 'Agregar Nueva Propiedad',
+                'regions': regions,
+                'advisors': get_user_model().objects.filter(is_staff=True, is_active=True).order_by('username'),
+                'financing_choices': Property.FINANCING_CHOICES,
+            })
     
     context = {
-        'title': 'Agregar Nueva Propiedad'
+        'title': 'Agregar Nueva Propiedad',
+        'regions': Region.objects.filter(is_active=True).order_by('order', 'name'),
+        'advisors': get_user_model().objects.filter(is_staff=True, is_active=True).order_by('username'),
+        'financing_choices': Property.FINANCING_CHOICES,
     }
     
     return render(request, 'properties/add_property.html', context)
 
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def edit_property(request, pk):
-    """Vista para editar una propiedad existente (solo administradores)"""
-    property_obj = get_object_or_404(Property, pk=pk)
-    
-    if request.method == 'POST':
-        try:
-            # Actualizar propiedad
-            property_obj.title = request.POST.get('title')
-            property_obj.description = request.POST.get('description')
-            property_obj.property_type = request.POST.get('property_type')
-            property_obj.operation_type = request.POST.get('operation_type')
-            price_value = request.POST.get('price', '').strip()
-            property_obj.price = float(price_value) if price_value else property_obj.price
-            property_obj.address = request.POST.get('address')
-            property_obj.city = request.POST.get('city')
-            property_obj.state = request.POST.get('state')
-            property_obj.zip_code = request.POST.get('zip_code', '')
-            property_obj.latitude = float(request.POST.get('latitude')) if request.POST.get('latitude') else None
-            property_obj.longitude = float(request.POST.get('longitude')) if request.POST.get('longitude') else None
-            property_obj.bedrooms = int(request.POST.get('bedrooms') or 0)
-            property_obj.bathrooms = int(request.POST.get('bathrooms') or 0)
-            property_obj.half_bathrooms = int(request.POST.get('half_bathrooms') or 0)
-            property_obj.parking_spaces = int(request.POST.get('parking_spaces') or 0)
-            property_obj.area = float(request.POST.get('construction_area') or 0)
-            property_obj.construction_area = float(request.POST.get('construction_area') or 0)
-            property_obj.lot_area = float(request.POST.get('lot_area') or 0)
-            property_obj.front_measure = request.POST.get('front_measure') or None
-            property_obj.back_measure = request.POST.get('back_measure') or None
-            property_obj.floors = int(request.POST.get('floors') or 1)
-            property_obj.year_built = int(request.POST.get('year_built')) if request.POST.get('year_built') else None
-            property_obj.rooms = int(request.POST.get('rooms') or 0)
-            property_obj.maintenance_fee = request.POST.get('maintenance_fee') or None
-            property_obj.is_featured = 'is_featured' in request.POST
-            property_obj.is_new = 'is_new' in request.POST
-            # Distribución
-            property_obj.has_sala = 'has_sala' in request.POST
-            property_obj.has_comedor = 'has_comedor' in request.POST
-            property_obj.has_cocina = 'has_cocina' in request.POST
-            property_obj.has_estudio = 'has_estudio' in request.POST
-            property_obj.has_despensa = 'has_despensa' in request.POST
-            property_obj.has_cuarto_tv = 'has_cuarto_tv' in request.POST
-            property_obj.has_gimnasio = 'has_gimnasio' in request.POST
-            property_obj.has_balcon = 'has_balcon' in request.POST
-            property_obj.has_jardin = 'has_jardin' in request.POST
-            property_obj.has_patio = 'has_patio' in request.POST
-            property_obj.has_roof_garden = 'has_roof_garden' in request.POST
-            property_obj.has_area_lavado = 'has_area_lavado' in request.POST
-            property_obj.has_bodega = 'has_bodega' in request.POST
-            # Amenidades
-            property_obj.amenity_salon = 'amenity_salon' in request.POST
-            property_obj.amenity_vigilancia = 'amenity_vigilancia' in request.POST
-            property_obj.amenity_acceso = 'amenity_acceso' in request.POST
-            property_obj.amenity_areas_verdes = 'amenity_areas_verdes' in request.POST
-            property_obj.amenity_juegos = 'amenity_juegos' in request.POST
-            property_obj.amenity_gimnasio = 'amenity_gimnasio' in request.POST
-            property_obj.amenity_alberca = 'amenity_alberca' in request.POST
-            property_obj.amenity_cancha_futbol = 'amenity_cancha_futbol' in request.POST
-            property_obj.amenity_cancha_tenis = 'amenity_cancha_tenis' in request.POST
-            property_obj.amenity_cancha_basket = 'amenity_cancha_basket' in request.POST
-            property_obj.amenity_asadores = 'amenity_asadores' in request.POST
-            property_obj.amenity_pet_friendly = 'amenity_pet_friendly' in request.POST
-            # Servicios
-            property_obj.service_agua = 'service_agua' in request.POST
-            property_obj.service_drenaje = 'service_drenaje' in request.POST
-            property_obj.service_luz = 'service_luz' in request.POST
-            property_obj.service_gas = 'service_gas' in request.POST
-            property_obj.service_internet = 'service_internet' in request.POST
-            property_obj.service_fibra = 'service_fibra' in request.POST
-            property_obj.service_cable = 'service_cable' in request.POST
-            property_obj.service_telefono = 'service_telefono' in request.POST
-            property_obj.service_cisterna = 'service_cisterna' in request.POST
-            property_obj.service_hidroneumatico = 'service_hidroneumatico' in request.POST
-            property_obj.service_aire = 'service_aire' in request.POST
-            property_obj.service_boiler = 'service_boiler' in request.POST
-            
-            property_obj.save()
-            
-            # Agregar nuevas imágenes si se subieron
-            images = request.FILES.getlist('images')
-            if images:
-                current_count = property_obj.images.count()
-                for idx, image in enumerate(images):
-                    PropertyImage.objects.create(
-                        property=property_obj,
-                        image=image,
-                        is_main=False,
-                        order=current_count + idx,
-                        alt_text=f"Imagen {current_count + idx + 1} de {property_obj.title}"
-                    )
-            
-            messages.success(request, f'Propiedad "{property_obj.title}" actualizada exitosamente.')
-            return redirect('properties:detail', pk=property_obj.pk)
-            
-        except Exception as e:
-            messages.error(request, f'Error al actualizar la propiedad: {str(e)}')
-            return render(request, 'properties/edit_property.html', {'property': property_obj, 'title': 'Editar Propiedad'})
-    
-    context = {
-        'property': property_obj,
-        'title': 'Editar Propiedad'
-    }
-    
-    return render(request, 'properties/edit_property.html', context)
+    """Redirige la edición pública al editor unificado del panel."""
+    return redirect('panel:property_edit', pk=pk)
 
 
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def manage_images(request, pk):
     """Vista para gestionar imágenes de una propiedad"""
     property_obj = get_object_or_404(Property, pk=pk)
@@ -847,15 +1140,21 @@ def manage_images(request, pk):
             images = request.FILES.getlist('images')
             if images:
                 current_count = property_obj.images.count()
+                uploaded = 0
                 for idx, image in enumerate(images):
-                    PropertyImage.objects.create(
-                        property=property_obj,
-                        image=image,
-                        is_main=False,
-                        order=current_count + idx,
-                        alt_text=f"Imagen {current_count + idx + 1} de {property_obj.title}"
-                    )
-                messages.success(request, f'{len(images)} imágenes agregadas.')
+                    try:
+                        PropertyImage.objects.create(
+                            property=property_obj,
+                            image=image,
+                            is_main=False,
+                            order=current_count + idx,
+                            alt_text=f"Imagen {current_count + idx + 1} de {property_obj.title}"
+                        )
+                        uploaded += 1
+                    except ValidationError as exc:
+                        messages.error(request, f'Imagen rechazada ({image.name}): {exc.messages[0]}')
+                if uploaded:
+                    messages.success(request, f'{uploaded} imágenes agregadas.')
         
         return redirect('properties:manage_images', pk=pk)
     
@@ -870,8 +1169,6 @@ def manage_images(request, pk):
 
 
 
-@login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
 def download_property_pdf(request, pk):
     from django.http import HttpResponse
     from reportlab.lib.pagesizes import letter
@@ -1100,4 +1397,5 @@ def download_property_pdf(request, pk):
     
     doc.build(elements)
     return response
+
 

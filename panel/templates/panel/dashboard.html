@@ -6,22 +6,27 @@
 <style>
     .dashboard-modern {
         padding: 0;
+        max-width: 100%;
     }
 
     .dashboard-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 32px;
+        margin-bottom: 18px;
         flex-wrap: wrap;
         gap: 16px;
+        background: #fff;
+        border: 1px solid #e8edf3;
+        border-radius: 14px;
+        padding: 16px;
     }
 
     .dashboard-title {
-        font-size: 28px;
-        font-weight: 300;
-        color: var(--olive);
-        letter-spacing: 1px;
+        font-size: 1.45rem;
+        font-weight: 600;
+        color: #2f3227;
+        letter-spacing: 0.3px;
         margin: 0;
     }
 
@@ -32,16 +37,16 @@
     }
 
     .btn-modern {
-        padding: 10px 20px;
-        border-radius: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
         text-decoration: none;
-        font-weight: 400;
-        font-size: 14px;
-        transition: all 0.3s ease;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.2px;
     }
 
     .btn-modern-primary {
@@ -52,8 +57,8 @@
 
     .btn-modern-primary:hover {
         background: var(--olive-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(64, 69, 46, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(64, 69, 46, 0.28);
     }
 
     .btn-modern-secondary {
@@ -71,17 +76,17 @@
     .stats-grid-modern {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
+        gap: 12px;
+        margin-bottom: 18px;
     }
 
     .stat-card-modern {
         background: white;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid var(--gray-200);
-        transition: all 0.3s ease;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border: 1px solid #e8edf3;
+        transition: all 0.2s ease;
         position: relative;
         overflow: hidden;
     }
@@ -97,8 +102,8 @@
     }
 
     .stat-card-modern:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.09);
     }
 
     .stat-card-modern.highlight {
@@ -115,14 +120,14 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 16px;
+        margin-bottom: 8px;
     }
 
     .stat-label {
-        font-size: 13px;
-        font-weight: 400;
+        font-size: 11px;
+        font-weight: 600;
         color: var(--gray-600);
-        letter-spacing: 0.5px;
+        letter-spacing: 0.35px;
         text-transform: uppercase;
     }
 
@@ -131,13 +136,13 @@
     }
 
     .stat-icon-modern {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: 20px;
         background: var(--gray-100);
         color: var(--olive);
     }
@@ -148,10 +153,10 @@
     }
 
     .stat-value {
-        font-size: 36px;
-        font-weight: 300;
+        font-size: 1.8rem;
+        font-weight: 600;
         color: var(--olive);
-        letter-spacing: -1px;
+        letter-spacing: -0.6px;
         line-height: 1;
     }
 
@@ -162,77 +167,77 @@
     /* Analytics Section - Preparado para futuro */
     .analytics-section {
         background: white;
-        border-radius: 16px;
-        padding: 32px;
-        margin-bottom: 40px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid var(--gray-200);
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 18px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border: 1px solid #e8edf3;
     }
 
     .section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid var(--gray-200);
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #edf1f5;
     }
 
     .section-title {
-        font-size: 20px;
-        font-weight: 400;
+        font-size: 1.05rem;
+        font-weight: 600;
         color: var(--olive);
-        letter-spacing: 0.5px;
+        letter-spacing: 0.2px;
         margin: 0;
     }
 
     .analytics-placeholder {
         text-align: center;
-        padding: 60px 20px;
+        padding: 28px 10px;
         color: var(--gray-600);
     }
 
     .analytics-placeholder-icon {
-        font-size: 64px;
+        font-size: 44px;
         color: var(--gray-300);
         margin-bottom: 16px;
     }
 
     .analytics-placeholder-text {
-        font-size: 16px;
-        font-weight: 300;
-        letter-spacing: 0.5px;
+        font-size: 0.92rem;
+        font-weight: 500;
+        letter-spacing: 0.1px;
     }
 
     /* Recent Properties Modern */
     .recent-section-modern {
         background: white;
-        border-radius: 16px;
-        padding: 32px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border: 1px solid var(--gray-200);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border: 1px solid #e8edf3;
     }
 
     .properties-list-modern {
         display: grid;
-        gap: 16px;
+        gap: 10px;
     }
 
     .property-item-modern {
         display: flex;
         align-items: center;
-        gap: 20px;
-        padding: 20px;
+        gap: 12px;
+        padding: 12px;
         border-radius: 12px;
-        border: 1px solid var(--gray-200);
-        transition: all 0.3s ease;
-        background: var(--gray-50);
+        border: 1px solid #e8edf3;
+        transition: all 0.2s ease;
+        background: #fbfcfd;
     }
 
     .property-item-modern:hover {
         background: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        transform: translateX(4px);
+        box-shadow: 0 8px 18px rgba(0,0,0,0.07);
+        transform: translateY(-1px);
     }
 
     .property-info-modern {
@@ -241,18 +246,18 @@
     }
 
     .property-title-modern {
-        font-size: 16px;
-        font-weight: 500;
+        font-size: 0.98rem;
+        font-weight: 600;
         color: var(--olive);
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         letter-spacing: 0.3px;
     }
 
     .property-meta-modern {
         display: flex;
-        gap: 16px;
+        gap: 10px;
         flex-wrap: wrap;
-        font-size: 13px;
+        font-size: 12px;
         color: var(--gray-600);
     }
 
@@ -263,8 +268,8 @@
     }
 
     .property-price-modern {
-        font-size: 18px;
-        font-weight: 500;
+        font-size: 1rem;
+        font-weight: 600;
         color: var(--olive);
         white-space: nowrap;
     }
@@ -275,14 +280,14 @@
     }
 
     .btn-icon {
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         border: 1px solid var(--gray-300);
         background: white;
         color: var(--olive);
@@ -292,7 +297,7 @@
         background: var(--olive);
         color: white;
         border-color: var(--olive);
-        transform: translateY(-2px);
+        transform: translateY(-1px);
     }
 
     .badge-modern {
@@ -331,24 +336,70 @@
         margin-bottom: 16px;
     }
 
+    @media (max-width: 992px) {
+        .dashboard-actions-modern {
+            width: 100%;
+        }
+
+        .dashboard-actions-modern .btn-modern {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
     @media (max-width: 768px) {
         .dashboard-header {
             flex-direction: column;
             align-items: flex-start;
+            padding: 12px;
+            gap: 10px;
         }
 
         .stats-grid-modern {
             grid-template-columns: 1fr;
         }
 
+        .dashboard-actions-modern {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-actions-modern .btn-modern {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .analytics-section,
+        .recent-section-modern {
+            padding: 12px;
+        }
+
         .property-item-modern {
             flex-direction: column;
             align-items: flex-start;
+            gap: 10px;
+        }
+
+        .property-price-modern {
+            width: 100%;
+            text-align: left;
         }
 
         .property-actions-modern {
             width: 100%;
-            justify-content: flex-end;
+            justify-content: flex-start;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .property-actions-modern .btn-icon {
+            width: 100%;
+        }
+
+        .analytics-placeholder-text br {
+            display: none;
         }
     }
 </style>
@@ -359,10 +410,6 @@
     <div class="dashboard-header">
         <h1 class="dashboard-title">Dashboard</h1>
         <div class="dashboard-actions-modern">
-            <a href="{% url 'properties:add' %}" class="btn-modern btn-modern-primary">
-                <i class="bi bi-plus-circle"></i>
-                Nueva Propiedad
-            </a>
             <a href="{% url 'panel:properties' %}" class="btn-modern btn-modern-secondary">
                 <i class="bi bi-list-ul"></i>
                 Ver Todas

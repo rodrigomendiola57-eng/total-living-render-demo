@@ -74,7 +74,7 @@ def is_staff_user(user):
     return user.is_authenticated and user.is_staff
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def panel_developments(request):
     """Panel de gestión de desarrollos"""
     developments = Development.objects.all().prefetch_related('images')
@@ -87,7 +87,7 @@ def panel_developments(request):
     return render(request, 'developments/panel/list.html', context)
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def panel_development_add(request):
     """Agregar nuevo desarrollo"""
     if request.method == 'POST':
@@ -127,7 +127,7 @@ def panel_development_add(request):
     return render(request, 'developments/panel/add.html', {'title': 'Nuevo Desarrollo'})
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def panel_development_edit(request, pk):
     """Editar desarrollo"""
     development = get_object_or_404(Development, pk=pk)
@@ -174,7 +174,7 @@ def panel_development_edit(request, pk):
     return render(request, 'developments/panel/edit.html', context)
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def panel_development_delete(request, pk):
     """Eliminar desarrollo"""
     development = get_object_or_404(Development, pk=pk)
@@ -193,7 +193,7 @@ def panel_development_delete(request, pk):
     return render(request, 'developments/panel/delete.html', context)
 
 @login_required
-@user_passes_test(is_staff_user, login_url='/admin/login/')
+@user_passes_test(is_staff_user, login_url='admin:login')
 def panel_development_images(request, pk):
     """Gestionar imágenes del desarrollo"""
     development = get_object_or_404(Development, pk=pk)
@@ -242,3 +242,4 @@ def panel_development_images(request, pk):
     }
     
     return render(request, 'developments/panel/images.html', context)
+

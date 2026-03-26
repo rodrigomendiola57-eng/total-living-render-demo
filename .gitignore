@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -26,14 +26,17 @@ env/
 ENV/
 .venv
 
-# Django
+# Django / local
 *.log
 local_settings.py
 db.sqlite3
+*.sqlite3
 db.sqlite3-journal
-/media
-/staticfiles
-/static_collected
+
+# Media y estÃ¡ticos generados en la raÃ­z del repo (collectstatic / uploads locales)
+/media/
+/staticfiles/
+/static_collected/
 
 # IDE
 .vscode/
@@ -46,10 +49,11 @@ db.sqlite3-journal
 .DS_Store
 Thumbs.db
 
-# Environment variables
+# Environment variables (nunca subir secretos)
 .env
 .env.local
 .env.*.local
+!.env.example
 
 # AWS
 .aws/
@@ -58,3 +62,11 @@ Thumbs.db
 htmlcov/
 .coverage
 .coverage.*
+.pytest_cache/
+
+# Docker (opcional)
+.docker/
+
+.env.production
+!.env.production.example
+

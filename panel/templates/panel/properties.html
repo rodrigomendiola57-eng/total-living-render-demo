@@ -2,6 +2,176 @@
 
 {% block title %}Gestión de Propiedades{% endblock %}
 
+{% block extra_css %}
+<style>
+.properties-container {
+    max-width: 100%;
+}
+
+.properties-container .page-header {
+    background: #ffffff;
+    border: 1px solid #eceff3;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+}
+
+.properties-container .page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: #2f3227;
+}
+
+.properties-container .btn-primary {
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 600;
+}
+
+.properties-container .filters-section {
+    border-radius: 14px;
+    border: 1px solid #eceff3;
+    box-shadow: 0 8px 24px rgba(32, 37, 42, 0.06);
+    margin-bottom: 18px;
+}
+
+.properties-container .filters-form {
+    gap: 10px;
+}
+
+.properties-container .filters-form input,
+.properties-container .filters-form select {
+    min-width: 150px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid #d9dee6;
+    font-size: 0.92rem;
+}
+
+.properties-container .btn-filter,
+.properties-container .btn-clear {
+    height: 42px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.properties-container .properties-table {
+    border-radius: 14px;
+    border: 1px solid #eceff3;
+    box-shadow: 0 8px 24px rgba(32, 37, 42, 0.06);
+}
+
+.properties-container th {
+    font-size: 11px;
+    letter-spacing: 0.6px;
+}
+
+.properties-container td {
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.properties-container .actions-group {
+    flex-wrap: wrap;
+}
+
+.properties-container .btn-action {
+    border-radius: 8px;
+    padding: 7px 10px;
+}
+
+@media (max-width: 900px) {
+    .properties-container .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .properties-container .btn-primary {
+        width: 100%;
+        text-align: center;
+    }
+
+    .properties-container .filters-form {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .properties-container .filters-form input,
+    .properties-container .filters-form select,
+    .properties-container .btn-filter,
+    .properties-container .btn-clear {
+        width: 100%;
+    }
+
+    .properties-table table,
+    .properties-table thead,
+    .properties-table tbody,
+    .properties-table tr,
+    .properties-table th,
+    .properties-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .properties-table thead {
+        display: none;
+    }
+
+    .properties-table tr {
+        background: #fff;
+        margin: 0 0 12px;
+        border: 1px solid #eceff3;
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .properties-table td {
+        border: none;
+        padding: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 13px;
+    }
+
+    .properties-table td::before {
+        content: attr(data-label);
+        color: #6c7480;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        flex-shrink: 0;
+    }
+
+    .properties-table td.actions-cell {
+        display: block;
+        padding-top: 10px;
+    }
+
+    .properties-table td.actions-cell::before {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .properties-container .actions-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .properties-container .btn-action {
+        justify-content: center;
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="properties-container">
     <div class="page-header">
@@ -65,16 +235,16 @@
             <tbody>
                 {% for property in properties %}
                 <tr>
-                    <td>{{ property.id }}</td>
-                    <td><strong>{{ property.title }}</strong></td>
-                    <td>{{ property.get_property_type_display }}</td>
-                    <td>{{ property.get_operation_type_display }}</td>
-                    <td>{{ property.city }}</td>
-                    <td>{{ property.get_price_display }}</td>
-                    <td><span class="badge badge-{{ property.status }}">{{ property.get_status_display }}</span></td>
-                    <td><span style="color: var(--olive); font-weight: 500;">{{ property.get_process_display|default:"En Búsqueda" }}</span></td>
-                    <td>{% if property.is_featured %}⭐{% else %}-{% endif %}</td>
-                    <td class="actions-cell">
+                    <td data-label="ID">{{ property.id }}</td>
+                    <td data-label="Título"><strong>{{ property.title }}</strong></td>
+                    <td data-label="Tipo">{{ property.get_property_type_display }}</td>
+                    <td data-label="Operación">{{ property.get_operation_type_display }}</td>
+                    <td data-label="Ciudad">{{ property.city }}</td>
+                    <td data-label="Precio">{{ property.get_price_display }}</td>
+                    <td data-label="Estado"><span class="badge badge-{{ property.status }}">{{ property.get_status_display }}</span></td>
+                    <td data-label="Proceso"><span style="color: var(--olive); font-weight: 500;">{{ property.get_process_display|default:"En Búsqueda" }}</span></td>
+                    <td data-label="Destacada">{% if property.is_featured %}⭐{% else %}-{% endif %}</td>
+                    <td data-label="Acciones" class="actions-cell">
                         <div class="actions-group">
                             <a href="{% url 'panel:property_edit' property.pk %}" class="btn-action btn-edit" title="Editar Propiedad">
                                 <i class="bi bi-pencil-square"></i> Editar

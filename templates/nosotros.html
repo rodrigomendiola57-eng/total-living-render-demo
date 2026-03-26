@@ -1,0 +1,792 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block title %}Nosotros - Total Living{% endblock %}
+
+{% block extra_css %}
+<style>
+    html {
+        overflow-x: clip !important;
+        overflow-y: scroll !important;
+    }
+    body {
+        overflow-x: clip !important;
+    }
+    .philosophy-page {
+        background: #f6f7f9;
+        padding-bottom: 54px;
+    }
+    .story-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 108px 0 92px;
+        color: #f4f5f7;
+        background:
+            linear-gradient(140deg, rgba(31, 36, 43, 0.94), rgba(47, 52, 45, 0.9)),
+            radial-gradient(circle at top right, rgba(215, 178, 122, 0.16), transparent 42%);
+    }
+    .story-hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(10, 13, 17, 0.05), rgba(10, 13, 17, 0.35));
+        pointer-events: none;
+    }
+    .story-hero-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.28;
+        z-index: 0;
+    }
+    .story-hero .container {
+        position: relative;
+        z-index: 1;
+    }
+    .story-content {
+        min-height: 390px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        transform: translateY(-10px);
+    }
+    .story-title {
+        font-family: 'Raleway', sans-serif;
+        font-size: clamp(1.8rem, 4vw, 3.2rem);
+        letter-spacing: 1.2px;
+        margin: 0 0 24px;
+        color: #ffffff;
+        line-height: 1.1;
+    }
+    @media (min-width: 992px) {
+        .story-title {
+            font-size: clamp(1.944rem, 4.32vw, 3.456rem);
+        }
+    }
+    .story-copy {
+        max-width: 840px;
+        color: rgba(244, 245, 247, 0.9);
+        line-height: 1.62;
+        margin: 0 0 30px;
+        font-size: clamp(1rem, 1.6vw, 1.22rem);
+        font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+        font-weight: 300;
+    }
+    .story-pillars {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .story-pillar {
+        border: 1px solid rgba(242, 236, 224, 0.28);
+        border-radius: 12px;
+        background: rgba(242, 236, 224, 0.08);
+        padding: 14px 12px;
+        font-size: 1.18rem;
+        font-weight: 200;
+        font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+        letter-spacing: 0.01em;
+        color: #f2ece0;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        line-height: 1.25;
+        transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+    }
+    .story-pillar:hover {
+        transform: scale(1.02);
+        background: rgba(242, 236, 224, 0.14);
+        border-color: rgba(242, 236, 224, 0.44);
+    }
+    .story-pillar i {
+        color: #d7b27a;
+        font-size: 1.02rem;
+    }
+
+    .philosophy-section {
+        margin-top: 22px;
+    }
+    .section-title {
+        font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+        font-size: clamp(1.8rem, 2.5vw, 2.3rem);
+        color: #2f342d;
+        margin: 0 0 18px;
+        font-weight: 600;
+        text-align: center;
+    }
+    .total-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        padding: 26px 20px;
+        min-height: 320px;
+        background-image: url("{% static 'images/manifiesto-bg-v4.png' %}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        box-shadow: 0 16px 34px rgba(20, 22, 18, 0.18);
+    }
+    .total-grid::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(140deg, rgba(17, 21, 16, 0.34), rgba(17, 21, 16, 0.28));
+        pointer-events: none;
+    }
+    .total-card {
+        border: 1px solid rgba(242, 236, 224, 0.34);
+        border-radius: 14px;
+        background: rgba(17, 21, 16, 0.2);
+        min-height: 168px;
+        padding: 16px 14px;
+        box-shadow: 0 8px 20px rgba(21, 24, 19, 0.18);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+    }
+    .total-card::after {
+        display: none;
+    }
+    .total-card:hover {
+        transform: scale(1.05);
+        background: rgba(17, 21, 16, 0.28);
+        box-shadow: 0 16px 32px rgba(17, 21, 16, 0.32);
+        border-color: rgba(242, 236, 224, 0.55);
+    }
+    .total-letter {
+        font-size: 2.6rem;
+        line-height: 1;
+        color: #ffffff;
+        font-family: 'Raleway', sans-serif;
+        margin-bottom: 10px;
+    }
+    .total-meaning {
+        margin: 0 0 7px;
+        font-size: 1.16rem;
+        font-weight: 700;
+        color: #ffffff;
+        font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+    }
+    .total-desc {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .bento-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: 18px;
+    }
+    .bento-card {
+        border-radius: 20px;
+        border: 1px solid rgba(242, 236, 224, 0.18);
+        min-height: 320px;
+        box-shadow: 0 16px 36px rgba(22, 24, 20, 0.14);
+        padding: 26px 24px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background-size: cover;
+        background-position: center;
+    }
+    .bento-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(150deg, rgba(24, 29, 22, 0.62), rgba(24, 29, 22, 0.52));
+        pointer-events: none;
+    }
+    .bento-card > * {
+        position: relative;
+        z-index: 1;
+    }
+    .bento-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(242, 236, 224, 0.36);
+        box-shadow: 0 24px 40px rgba(22, 24, 20, 0.22);
+    }
+    .bento-card.mision-bg {
+        background-image: url("{% static 'images/mision-card.png' %}");
+    }
+    .bento-card.vision-bg {
+        background-image: url("{% static 'images/vision-card.png' %}");
+    }
+    .bento-head {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .bento-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+    }
+    .bento-title {
+        margin: 0;
+        font-size: 2rem;
+        font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+        color: #ffffff;
+        font-weight: 300;
+        letter-spacing: 0.02em;
+    }
+    .bento-copy {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.95);
+        line-height: 1.7;
+        font-size: 1.18rem;
+        font-weight: 300;
+        max-width: 92%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+    }
+    .value-card {
+        border-radius: 14px;
+        border: 1px solid rgba(64, 69, 46, 0.16);
+        background: #fff;
+        padding: 13px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .value-card::after {
+        display: none;
+    }
+    .value-card:hover {
+        transform: scale(1.05);
+        background: #fffef5;
+        box-shadow: 0 16px 32px rgba(215, 178, 122, 0.25);
+    }
+    .value-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(64, 69, 46, 0.12);
+        color: #40452E;
+        margin-bottom: 7px;
+    }
+    .value-title {
+        margin: 0 0 3px;
+        color: #263024;
+        font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+    .value-copy {
+        margin: 0;
+        color: #626c7d;
+        font-size: 0.84rem;
+    }
+    .team-banner {
+        margin-top: 18px;
+        min-height: 520px;
+        border-radius: 0;
+        overflow: hidden;
+        position: relative;
+        background: transparent;
+        box-shadow: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .team-banner-photo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+    .team-banner-title {
+        position: absolute;
+        left: 50%;
+        bottom: 46px;
+        transform: translateX(-50%);
+        z-index: 1;
+        margin: 0;
+        color: #ffffff;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(1.9rem, 4.2vw, 4rem);
+        letter-spacing: 0.04em;
+        font-weight: 600;
+        text-transform: uppercase;
+        text-shadow: 0 3px 14px rgba(0, 0, 0, 0.45);
+        padding: 0 20px;
+        white-space: nowrap;
+        line-height: 1;
+    }
+
+    /* Organigrama Moderno */
+    .orgchart-container {
+        margin-top: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 35px;
+    }
+    .org-level {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .org-card {
+        border-radius: 20px;
+        border: 1px solid rgba(64, 69, 46, 0.08);
+        background: #fff;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(20, 22, 18, 0.04);
+        width: 260px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    .org-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 12px 32px rgba(215, 178, 122, 0.2);
+        border-color: rgba(215, 178, 122, 0.3);
+    }
+    .org-card.director {
+        width: 300px;
+        border-color: rgba(215, 178, 122, 0.2);
+        background: linear-gradient(135deg, #ffffff 0%, #fffef8 100%);
+    }
+    .org-card.manager {
+        width: 280px;
+    }
+    .org-photo-container {
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    .org-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    .org-card:hover .org-photo {
+        transform: scale(1.05);
+    }
+    .org-photo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(64, 69, 46, 0.3);
+        font-size: 4rem;
+        font-weight: 200;
+        font-family: 'Nunito', sans-serif;
+        letter-spacing: -2px;
+    }
+    .org-body {
+        padding: 20px;
+        text-align: center;
+    }
+    .org-name {
+        margin: 0 0 6px;
+        font-size: 1.25rem;
+        color: #1a1d1a;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 300;
+        letter-spacing: -0.5px;
+    }
+    .org-role {
+        margin: 0 0 14px;
+        color: #8b9299;
+        font-size: 0.875rem;
+        font-weight: 400;
+        font-family: 'Nunito', sans-serif;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .org-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 100px;
+        background: rgba(215, 178, 122, 0.1);
+        color: #8b7355;
+        font-size: 0.75rem;
+        font-weight: 500;
+        font-family: 'Nunito', sans-serif;
+        padding: 6px 14px;
+        margin-bottom: 14px;
+        letter-spacing: 0.3px;
+    }
+    .org-tag i {
+        font-size: 0.875rem;
+    }
+    .org-bio {
+        margin: 0 0 16px;
+        color: #6b7280;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        font-family: 'Nunito', sans-serif;
+        font-weight: 300;
+    }
+    .org-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    .org-action {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid rgba(64, 69, 46, 0.1);
+        color: #6b7280;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: #fff;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+    .org-action:hover {
+        background: #40452E;
+        color: #fff;
+        border-color: #40452E;
+        transform: translateY(-2px);
+    }
+    .org-connector {
+        width: 1px;
+        height: 35px;
+        background: linear-gradient(180deg, rgba(215, 178, 122, 0.4), rgba(215, 178, 122, 0.1));
+        margin: 0 auto;
+    }
+    .org-view-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        color: #d7b27a;
+        font-size: 0.8rem;
+        font-weight: 500;
+        font-family: 'Nunito', sans-serif;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .org-card:hover .org-view-more {
+        opacity: 1;
+    }
+
+    .reveal {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @media (max-width: 991.98px) {
+        .story-pillars,
+        .total-grid,
+        .values-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .total-grid {
+            min-height: 520px;
+            background-size: cover;
+        }
+        .bento-grid {
+            grid-template-columns: 1fr;
+        }
+        .org-card {
+            width: 100% !important;
+            max-width: 350px;
+        }
+        .team-banner {
+            min-height: 380px;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .story-hero {
+            padding: 84px 0 68px;
+        }
+        .story-content {
+            min-height: 320px;
+            transform: translateY(-4px);
+        }
+        .story-pillars,
+        .total-grid,
+        .values-grid {
+            grid-template-columns: 1fr;
+        }
+        .total-grid {
+            min-height: 620px;
+        }
+        .org-level {
+            flex-direction: column;
+            align-items: center;
+        }
+        .team-banner {
+            min-height: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="story-hero">
+    <video class="story-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+        <source src="{% static 'videos/filosofia-total.mp4' %}" type="video/mp4">
+    </video>
+    <div class="container">
+        <div class="story-content">
+            <h1 class="story-title">{{ nosotros_content.hero_title }}</h1>
+            <p class="story-copy">
+                {{ nosotros_content.hero_line_1 }}<br>
+                {{ nosotros_content.hero_line_2 }}
+            </p>
+            <div class="story-pillars">
+                <div class="story-pillar"><i class="bi bi-check2-circle"></i> {{ nosotros_content.pillar_1 }}</div>
+                <div class="story-pillar"><i class="bi bi-shield-check"></i> {{ nosotros_content.pillar_2 }}</div>
+                <div class="story-pillar"><i class="bi bi-bar-chart-line"></i> {{ nosotros_content.pillar_3 }}</div>
+                <div class="story-pillar"><i class="bi bi-diagram-3"></i> {{ nosotros_content.pillar_4 }}</div>
+                <div class="story-pillar"><i class="bi bi-clock-history"></i> {{ nosotros_content.pillar_5 }}</div>
+                <div class="story-pillar"><i class="bi bi-journal-check"></i> {{ nosotros_content.pillar_6 }}</div>
+                <div class="story-pillar"><i class="bi bi-people"></i> {{ nosotros_content.pillar_7 }}</div>
+                <div class="story-pillar"><i class="bi bi-cash-coin"></i> {{ nosotros_content.pillar_8 }}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="philosophy-page">
+    <div class="container">
+        <div class="philosophy-section reveal">
+            <h2 class="section-title">{{ nosotros_content.manifest_title }}</h2>
+            <div class="total-grid">
+                <article class="total-card">
+                    <div class="total-letter">T</div>
+                    <p class="total-meaning">{{ nosotros_content.manifest_t_meaning }}</p>
+                    <p class="total-desc">{{ nosotros_content.manifest_t_desc }}</p>
+                </article>
+                <article class="total-card">
+                    <div class="total-letter">O</div>
+                    <p class="total-meaning">{{ nosotros_content.manifest_o_meaning }}</p>
+                    <p class="total-desc">{{ nosotros_content.manifest_o_desc }}</p>
+                </article>
+                <article class="total-card">
+                    <div class="total-letter">T</div>
+                    <p class="total-meaning">{{ nosotros_content.manifest_t2_meaning }}</p>
+                    <p class="total-desc">{{ nosotros_content.manifest_t2_desc }}</p>
+                </article>
+                <article class="total-card">
+                    <div class="total-letter">A</div>
+                    <p class="total-meaning">{{ nosotros_content.manifest_a_meaning }}</p>
+                    <p class="total-desc">{{ nosotros_content.manifest_a_desc }}</p>
+                </article>
+                <article class="total-card">
+                    <div class="total-letter">L</div>
+                    <p class="total-meaning">{{ nosotros_content.manifest_l_meaning }}</p>
+                    <p class="total-desc">{{ nosotros_content.manifest_l_desc }}</p>
+                </article>
+            </div>
+        </div>
+
+        <div class="philosophy-section reveal">
+            <h2 class="section-title">{{ nosotros_content.mission_vision_title }}</h2>
+            <div class="bento-grid">
+                <article class="bento-card mision-bg">
+                    <div class="bento-head">
+                        <div class="bento-icon"><i class="bi bi-grid-1x2"></i></div>
+                        <h3 class="bento-title">{{ nosotros_content.mission_title }}</h3>
+                    </div>
+                    <p class="bento-copy">
+                        {{ nosotros_content.mission_text }}
+                    </p>
+                </article>
+                <article class="bento-card vision-bg">
+                    <div class="bento-head">
+                        <div class="bento-icon"><i class="bi bi-compass"></i></div>
+                        <h3 class="bento-title">{{ nosotros_content.vision_title }}</h3>
+                    </div>
+                    <p class="bento-copy">
+                        {{ nosotros_content.vision_text }}
+                    </p>
+                </article>
+            </div>
+        </div>
+
+        <div class="philosophy-section reveal">
+            <article class="team-banner">
+                <img class="team-banner-photo" src="{% static 'images/equipo-total-living-banner-v2.png' %}" alt="Equipo Total Living">
+                <h2 class="team-banner-title">{{ nosotros_content.team_banner_title }}</h2>
+            </article>
+        </div>
+
+        <div class="philosophy-section reveal">
+            <h2 class="section-title">Estructura de equipo</h2>
+            <div class="orgchart-container">
+                <!-- Nivel 1: Director -->
+                <div class="org-level">
+                    <a href="{% url 'team_member_detail' 'alfredo-mendiola' %}" class="org-card director">
+                        <div class="org-photo-container">
+                            {% if director_photo %}
+                                <img src="{{ director_photo }}" alt="Alfredo Mendiola" class="org-photo">
+                            {% else %}
+                                <div class="org-photo-placeholder">AM</div>
+                            {% endif %}
+                        </div>
+                        <div class="org-body">
+                            <p class="org-name">Alfredo Mendiola</p>
+                            <p class="org-role">Director General</p>
+                            <span class="org-tag"><i class="bi bi-briefcase"></i> Dirección estratégica</span>
+                            <p class="org-bio">Lidera la visión de Total Living, define estándares de servicio y asegura que cada unidad comercial opere con procesos medibles.</p>
+                            <div class="org-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                                <a class="org-action" href="mailto:contacto@totalliving.com" aria-label="Correo"><i class="bi bi-envelope"></i></a>
+                                <a class="org-action" href="https://www.instagram.com/total.living.mx/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                                <a class="org-action" href="https://www.facebook.com/total.living.mx?locale=es_LA" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                            </div>
+                            <span class="org-view-more">Ver perfil completo <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Conector -->
+                <div class="org-connector"></div>
+
+                <!-- Nivel 2: Gerente -->
+                <div class="org-level">
+                    <a href="{% url 'team_member_detail' 'patricia-chavarria' %}" class="org-card manager">
+                        <div class="org-photo-container">
+                            {% if manager_photo %}
+                                <img src="{{ manager_photo }}" alt="Patricia Chavarría" class="org-photo">
+                            {% else %}
+                                <div class="org-photo-placeholder">PC</div>
+                            {% endif %}
+                        </div>
+                        <div class="org-body">
+                            <p class="org-name">Patricia Chavarría</p>
+                            <p class="org-role">Gerente Comercial</p>
+                            <span class="org-tag"><i class="bi bi-graph-up-arrow"></i> Ventas y captación</span>
+                            <p class="org-bio">Coordina el frente comercial, estructura estrategias de captación y supervisa la correcta ejecución de cada operación activa.</p>
+                            <div class="org-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                                <a class="org-action" href="mailto:contacto@totalliving.com" aria-label="Correo"><i class="bi bi-envelope"></i></a>
+                                <a class="org-action" href="https://api.whatsapp.com/send?phone=4428669965" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                            </div>
+                            <span class="org-view-more">Ver perfil completo <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Conector -->
+                {% if team_members %}
+                <div class="org-connector"></div>
+                {% endif %}
+
+                <!-- Nivel 3: Asesores -->
+                {% if team_members %}
+                <div class="org-level">
+                    {% for member in team_members %}
+                    <a href="{% url 'team_member_detail' member.username|slugify %}" class="org-card">
+                        <div class="org-photo-container">
+                            {% if member.profile_photo %}
+                                <img src="{{ member.profile_photo.url }}" alt="{{ member.first_name }} {{ member.last_name }}" class="org-photo">
+                            {% else %}
+                                <div class="org-photo-placeholder">
+                                    {% if member.first_name %}
+                                        {{ member.first_name|first|upper }}{% if member.last_name %}{{ member.last_name|first|upper }}{% endif %}
+                                    {% else %}
+                                        {{ member.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="org-body">
+                            <p class="org-name">
+                                {% if member.first_name or member.last_name %}
+                                    {{ member.first_name }} {{ member.last_name }}
+                                {% else %}
+                                    {{ member.username }}
+                                {% endif %}
+                            </p>
+                            <p class="org-role">Asesor Inmobiliario</p>
+                            <span class="org-tag"><i class="bi bi-house-heart"></i> Compra, venta y renta</span>
+                            <p class="org-bio">Acompaña al cliente en valuación, prospección y cierre, con foco en tiempos de respuesta y calidad de seguimiento.</p>
+                            <div class="org-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                                {% if member.email %}
+                                <a class="org-action" href="mailto:{{ member.email }}" aria-label="Correo"><i class="bi bi-envelope"></i></a>
+                                {% else %}
+                                <a class="org-action" href="#" aria-label="Perfil"><i class="bi bi-person"></i></a>
+                                {% endif %}
+                            </div>
+                            <span class="org-view-more">Ver perfil completo <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="org-level">
+                    <article class="org-card">
+                        <div class="org-photo-container">
+                            <div class="org-photo-placeholder">TL</div>
+                        </div>
+                        <div class="org-body">
+                            <p class="org-name">Asesores Total Living</p>
+                            <p class="org-role">Equipo Comercial</p>
+                            <span class="org-tag"><i class="bi bi-people"></i> Captación y cierre</span>
+                            <p class="org-bio">Nuestro equipo de asesores ejecuta procesos de comercialización con metodología, seguimiento y objetivos de cierre.</p>
+                            <div class="org-actions">
+                                <a class="org-action" href="{% url 'contact:contact' %}" aria-label="Contacto"><i class="bi bi-chat-dots"></i></a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animaciones reveal desactivadas para evitar conflictos con hover
+</script>
+{% endblock %}

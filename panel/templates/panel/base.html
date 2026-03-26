@@ -23,9 +23,9 @@
             <ul class="nav-menu">
                 <li><a href="{% url 'home' %}" class="btn-home">Inicio</a></li>
                 <li><a href="{% url 'panel:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+                <li><a href="{% url 'panel:nosotros_edit' %}" class="{% if 'nosotros' in request.resolver_match.url_name %}active{% endif %}">Nosotros</a></li>
                 <li><a href="{% url 'panel:properties' %}" class="{% if 'properties' in request.resolver_match.url_name %}active{% endif %}">Propiedades</a></li>
-                <li><a href="{% url 'properties:add' %}">+ Nueva</a></li>
-                <li><a href="{% url 'panel:carousel_list' %}" class="{% if 'carousel' in request.resolver_match.url_name %}active{% endif %}">Carrusel</a></li>
+                <li><a href="{% url 'panel:inbox' %}" class="{% if 'inbox' in request.resolver_match.url_name %}active{% endif %}">Buzon de Solicitudes</a></li>
                 <li><a href="{% url 'developments:panel_list' %}" class="{% if 'developments' in request.resolver_match.url_name or 'panel_list' in request.resolver_match.url_name %}active{% endif %}">Desarrollos</a></li>
                 <li><a href="{% url 'regions:panel_regions' %}" class="{% if 'regions' in request.resolver_match.url_name %}active{% endif %}">Regiones</a></li>
                 <li class="nav-user">
@@ -54,5 +54,6 @@
     <footer class="panel-footer">
         <p>&copy; 2024 Total Living. Panel de Gestión Interno.</p>
     </footer>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

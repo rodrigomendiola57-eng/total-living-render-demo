@@ -1,3 +1,4 @@
+{% load i18n %}
 <a href="{% url 'properties:detail' property.pk %}?from=renta" class="property-card-link" style="text-decoration: none; color: inherit;">
 <div class="property-card-modern">
     {% with main_image=property.get_main_image %}
@@ -37,13 +38,13 @@
             
             <!-- Botón -->
             <div class="property-card-button-container">
-                <span class="property-card-button">Más información</span>
+                <span class="property-card-button">{% trans "Más información" %}</span>
             </div>
         </div>
         
         {% if property.is_featured %}
         <span class="property-badge-featured">
-            <i class="bi bi-star-fill"></i> Destacada
+            <i class="bi bi-star-fill"></i> {% trans "Destacada" %}
         </span>
         {% endif %}
     </div>
@@ -74,7 +75,7 @@
                 {{ property.get_price_display }}<span style="font-size: 0.9rem; opacity: 0.9;">/mes</span>
             </div>
             <div class="property-card-button-container">
-                <span class="property-card-button">Más información</span>
+                <span class="property-card-button">{% trans "Más información" %}</span>
             </div>
         </div>
     </div>

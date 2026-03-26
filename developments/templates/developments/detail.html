@@ -472,8 +472,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         const map = L.map('development-map').setView([19.4326, -99.1332], 13);
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+        L.tileLayer('{{ MAP_TILES.url|escapejs }}', {
+            attribution: '{{ MAP_TILES.attribution|escapejs }}',
+            subdomains: '{{ MAP_TILES.subdomains|escapejs }}',
+            maxZoom: {{ MAP_TILES.max_zoom }}
         }).addTo(map);
         
         // Intentar obtener coordenadas de la URL de Google Maps o usar una ubicación por defecto

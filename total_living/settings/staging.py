@@ -2,5 +2,6 @@
 Configuración para entorno de staging
 """
 from .production import *
+from decouple import config
 
-DEBUG = True  # En staging podemos tener DEBUG activo para testing
+DEBUG = config('DEBUG', default=False, cast=bool)

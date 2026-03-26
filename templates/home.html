@@ -1,24 +1,25 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}Total Living - Encuentra tu Propiedad Ideal{% endblock %}
 
 {% load humanize %}
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
 .hero-carousel {
-    height: calc(100vh - 120px);
+    height: 100vh;
     position: relative;
     overflow: hidden;
 }
 
 .hero-carousel .carousel-item {
-    height: calc(100vh - 120px);
+    height: 100vh;
+    overflow: hidden;
 }
 
 .hero-carousel .carousel-item img {
-    height: calc(100vh - 120px);
+    height: 100vh;
     object-fit: cover;
     width: 100%;
     /* Optimización de renderizado de imágenes */
@@ -36,6 +37,14 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+@supports (height: 100dvh) {
+    .hero-carousel,
+    .hero-carousel .carousel-item,
+    .hero-carousel .carousel-item img {
+        height: 100dvh;
+    }
+}
+
 .carousel-overlay {
     position: absolute;
     top: 0;
@@ -49,11 +58,33 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: stretch;
+    overflow: hidden;
 }
 
 /* Título del carrusel - Glassmorphism Transparente FIJO */
 .hero-carousel-section {
     position: relative;
+    overflow: hidden;
+}
+
+/* Home inmersiva: navbar oculta al entrar y aparece al deslizar */
+body.home-immersive .navbar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1055;
+    transform: translateY(-110%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+body.home-immersive.home-nav-visible .navbar {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .carousel-header {
@@ -97,6 +128,94 @@
     z-index: 3;
     width: 100%;
     padding: 60px 0 80px;
+    overflow: hidden;
+}
+
+.carousel-main-column {
+    min-width: 0;
+}
+
+.carousel-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0.9rem;
+}
+
+.carousel-property-title {
+    font-size: clamp(1.65rem, 3vw, 2.75rem);
+    line-height: 1.2;
+    margin-bottom: 0.9rem;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.carousel-features {
+    gap: 14px !important;
+    margin-bottom: 0.9rem !important;
+}
+
+.carousel-feature-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: clamp(0.92rem, 1.8vw, 1rem);
+}
+
+.carousel-location {
+    font-size: clamp(0.9rem, 1.8vw, 1rem);
+}
+
+.carousel-price-panel {
+    width: 100%;
+    max-width: 380px;
+    margin-left: auto;
+}
+
+.carousel-price {
+    font-size: clamp(1.6rem, 3vw, 2.4rem) !important;
+    line-height: 1.15;
+    margin-bottom: 0.8rem !important;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.carousel-cta {
+    width: 100%;
+    max-width: 330px;
+}
+
+/* Cinemática del contenido del carrusel */
+.cinematic-item {
+    opacity: 0;
+    will-change: opacity;
+}
+
+.carousel-item.active .cinematic-item {
+    animation: cinematicReveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.carousel-item.active .cinematic-delay-1 { animation-delay: 0.08s; }
+.carousel-item.active .cinematic-delay-2 { animation-delay: 0.18s; }
+.carousel-item.active .cinematic-delay-3 { animation-delay: 0.3s; }
+.carousel-item.active .cinematic-delay-4 { animation-delay: 0.42s; }
+.carousel-item.active .cinematic-delay-5 { animation-delay: 0.54s; }
+
+@keyframes cinematicReveal {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cinematic-item,
+    .carousel-item.active .cinematic-item {
+        animation: none !important;
+        opacity: 1 !important;
+    }
 }
 
 .carousel-control-prev,
@@ -138,8 +257,56 @@
 
 /* Carrusel de Últimas Propiedades - Estilo C21 */
 .latest-properties-section {
-    padding: 80px 0;
+    padding: 32px 0 72px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbfc 100%);
+}
+
+.home-properties-map-section {
+    padding: 40px 0 18px;
     background: #ffffff;
+}
+
+.home-properties-map-title {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.home-properties-map-title h2 {
+    font-size: clamp(1.45rem, 2.8vw, 2.2rem);
+    font-weight: 400;
+    color: #3d3526;
+    letter-spacing: 2.5px;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+}
+
+.home-properties-map-title::after {
+    content: '';
+    display: block;
+    width: 92px;
+    height: 2px;
+    background: #3d3526;
+    margin: 12px auto 0;
+}
+
+.home-properties-map-canvas-wrapper {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 16px 42px rgba(16, 20, 28, 0.10);
+}
+
+#home-properties-map-canvas {
+    width: 100%;
+    height: 560px;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    #home-properties-map-canvas {
+        height: 380px;
+    }
 }
 
 .latest-properties-title {
@@ -164,6 +331,588 @@
     height: 2px;
     background: #3d3526;
     margin: 15px auto 0;
+}
+
+.exclusive-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.services-section-title {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.services-section-title h2 {
+    font-family: 'Raleway', sans-serif;
+    font-size: clamp(1.3rem, 2.25vw, 2rem);
+    font-weight: 500;
+    letter-spacing: 2.2px;
+    color: #2f342a;
+    margin: 0 0 6px;
+}
+
+.services-section-title::after {
+    content: '';
+    display: block;
+    width: 82px;
+    height: 2px;
+    background: linear-gradient(90deg, #3d3526 0%, #bfa06b 100%);
+    margin: 12px auto 0;
+}
+
+.services-section-title p {
+    margin: 0;
+    color: #6b7482;
+    font-size: 0.98rem;
+    line-height: 1.7;
+}
+
+.service-showcase-card {
+    position: relative;
+    min-height: 100%;
+    border-radius: 20px;
+    padding: 28px 24px 24px;
+    overflow: hidden;
+    border: 1px solid rgba(210, 216, 227, 0.5);
+    box-shadow: 0 18px 38px rgba(17, 24, 39, 0.08);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+
+.service-showcase-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.service-showcase-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 44px rgba(17, 24, 39, 0.12);
+}
+
+.service-showcase-card--light {
+    background: linear-gradient(180deg, #f7f4ee 0%, #f2ece0 100%);
+    color: #2f342a;
+}
+
+.service-showcase-card--accent {
+    background: linear-gradient(180deg, #40452E 0%, #343827 100%);
+    color: #ffffff;
+}
+
+.service-showcase-card--slate {
+    background: linear-gradient(180deg, #6f7358 0%, #5c6047 100%);
+    color: #ffffff;
+}
+
+.service-showcase-card--light .service-showcase-copy,
+.service-showcase-card--light .service-showcase-list,
+.service-showcase-card--light .service-showcase-list li {
+    color: #5d6676;
+}
+
+.service-showcase-card--accent .service-showcase-copy,
+.service-showcase-card--accent .service-showcase-list,
+.service-showcase-card--accent .service-showcase-list li,
+.service-showcase-card--slate .service-showcase-copy,
+.service-showcase-card--slate .service-showcase-list,
+.service-showcase-card--slate .service-showcase-list li {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.service-showcase-card--accent .service-showcase-title,
+.service-showcase-card--slate .service-showcase-title {
+    color: #ffffff;
+}
+
+.service-showcase-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.service-showcase-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.18rem;
+    flex-shrink: 0;
+}
+
+.service-showcase-card--light .service-showcase-icon {
+    background: #c4a572;
+    color: #2f342a;
+}
+
+.service-showcase-card--accent .service-showcase-icon,
+.service-showcase-card--slate .service-showcase-icon {
+    background: rgba(242, 236, 224, 0.96);
+    color: #3b3e2a;
+}
+
+.service-showcase-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.55rem;
+    line-height: 1.2;
+    font-weight: 600;
+    margin: 0;
+}
+
+.service-showcase-copy {
+    font-size: 0.96rem;
+    line-height: 1.8;
+    margin: 0 0 18px;
+}
+
+.service-showcase-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.service-showcase-list li {
+    position: relative;
+    padding-left: 18px;
+    font-size: 0.92rem;
+    line-height: 1.65;
+}
+
+.service-showcase-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.68;
+}
+
+.service-showcase-card--accent .service-showcase-list li::before,
+.service-showcase-card--slate .service-showcase-list li::before {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.about-totalliving-section {
+    padding: 8px 0 34px;
+    background: #ffffff;
+}
+
+.about-totalliving-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+    align-items: stretch;
+    background: linear-gradient(135deg, #40452E 0%, #38382E 70%, #2f3227 100%);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 44px rgba(16, 20, 28, 0.12);
+}
+
+.about-totalliving-copy {
+    padding: 52px 48px;
+    color: #ffffff;
+}
+
+.about-totalliving-eyebrow {
+    display: inline-block;
+    margin-bottom: 14px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(242, 236, 224, 0.84);
+}
+
+.about-totalliving-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.9rem, 3vw, 2.75rem);
+    line-height: 1.15;
+    font-weight: 600;
+    margin: 0 0 18px;
+    color: #ffffff;
+}
+
+.about-totalliving-text {
+    font-size: 1rem;
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 24px;
+    max-width: 620px;
+}
+
+.about-totalliving-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: #f2ece0;
+    color: #38382E;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+.about-totalliving-cta:hover {
+    color: #38382E;
+    background: #e8dcc7;
+}
+
+.about-totalliving-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.about-totalliving-social {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(242, 236, 224, 0.4);
+    background: rgba(242, 236, 224, 0.08);
+}
+
+.about-totalliving-social-link {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #f2ece0;
+    text-decoration: none;
+    border: 1px solid rgba(242, 236, 224, 0.38);
+    background: rgba(242, 236, 224, 0.05);
+    transition: all 0.2s ease;
+}
+
+.about-totalliving-social-link:hover {
+    color: #38382E;
+    background: #f2ece0;
+    border-color: #f2ece0;
+}
+
+.about-totalliving-visual {
+    position: relative;
+    min-height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+}
+
+.about-totalliving-photo-frame {
+    width: 100%;
+    min-height: 420px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid rgba(242, 236, 224, 0.18);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+}
+
+.about-totalliving-photo {
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+.why-totalliving-section {
+    padding: 8px 0 64px;
+    background: #ffffff;
+}
+
+.home-listings-section {
+    padding: 24px 0 42px;
+    background: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.home-listings-title {
+    font-family: 'Raleway', sans-serif;
+    font-size: clamp(1.2rem, 2.2vw, 1.85rem);
+    font-weight: 400;
+    letter-spacing: 1.4px;
+    color: #38382E;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.home-listings-grid {
+    margin-top: 4px;
+}
+
+.home-listings-grid .property-card-modern {
+    height: 390px !important;
+}
+
+.home-listings-grid .property-card-image-container,
+.home-listings-grid .property-card-image {
+    height: 390px !important;
+}
+
+.home-listings-cta {
+    margin-top: 14px;
+}
+
+.why-totalliving-title {
+    text-align: center;
+    margin-bottom: 26px;
+}
+
+.why-totalliving-title h2 {
+    font-size: clamp(1.35rem, 2.5vw, 2rem);
+    font-weight: 400;
+    color: #2f342a;
+    letter-spacing: 1.8px;
+    margin-bottom: 8px;
+    font-family: 'Raleway', sans-serif;
+}
+
+.why-totalliving-title p {
+    margin: 0;
+    color: #667184;
+    font-size: 0.98rem;
+}
+
+.why-totalliving-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 900px;
+}
+
+.why-totalliving-card {
+    position: relative;
+    border: 1px solid rgba(201, 189, 165, 0.45);
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbf8f3 100%);
+    box-shadow: 0 8px 18px rgba(15, 20, 30, 0.05);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.why-totalliving-card.reveal-left {
+    transform: translateX(-16px) translateY(14px) scale(0.985);
+}
+
+.why-totalliving-card.reveal-right {
+    transform: translateX(16px) translateY(14px) scale(0.985);
+}
+
+.why-totalliving-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 22px;
+    right: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(196, 165, 114, 0.18) 0%, rgba(64, 69, 46, 0.55) 50%, rgba(196, 165, 114, 0.18) 100%);
+}
+
+.why-totalliving-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #40452E 0%, #2f3324 100%);
+    color: #f2ece0;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+    transform: scale(0.88) rotate(-10deg);
+    opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+}
+
+.why-totalliving-card h3 {
+    font-size: 1.24rem;
+    margin: 0 0 10px;
+    color: #323a2d;
+    font-weight: 400;
+    font-family: 'Raleway', sans-serif;
+    letter-spacing: 0.3px;
+    line-height: 1.25;
+}
+
+.why-totalliving-card p {
+    margin: 0 0 12px;
+    color: #667184;
+    font-size: 0.92rem;
+    line-height: 1.65;
+}
+
+.why-totalliving-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.why-totalliving-list li {
+    position: relative;
+    padding-left: 15px;
+    color: #5f6978;
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.why-totalliving-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(64, 69, 46, 0.7);
+}
+
+.why-totalliving-card.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.why-totalliving-card.is-visible .why-totalliving-icon {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+}
+
+@media (max-width: 991.98px) {
+    /* En móvil/tablet: animación ligera (sin bloquear scroll) */
+    .why-totalliving-card {
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.35s ease, transform 0.35s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .why-totalliving-card.reveal-left,
+    .why-totalliving-card.reveal-right {
+        transform: translateY(12px);
+    }
+
+    .why-totalliving-card.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .why-totalliving-icon {
+        opacity: 0;
+        transform: scale(0.94);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .why-totalliving-card.is-visible .why-totalliving-icon {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.why-totalliving-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(196, 165, 114, 0.75);
+    box-shadow: 0 16px 28px rgba(15, 20, 30, 0.08);
+    background: linear-gradient(180deg, #ffffff 0%, #f6f1e8 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .why-totalliving-card {
+        opacity: 1;
+        transform: none;
+        transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .why-totalliving-card.reveal-left,
+    .why-totalliving-card.reveal-right {
+        transform: none;
+    }
+
+    .why-totalliving-icon {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+.exclusive-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: #2f342a;
+    margin: 0 0 10px;
+    line-height: 1.35;
+}
+
+.exclusive-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.84rem;
+    color: #5f6672;
+    margin-bottom: 10px;
+}
+
+.exclusive-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.exclusive-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: #6a717e;
+    margin-bottom: 12px;
+}
+
+.exclusive-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #3a3c31;
+    text-decoration: none;
+    margin-top: 14px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(193, 162, 112, 0.45);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.exclusive-link:hover {
+    color: #ffffff;
+    background: #3b3e2a;
+    border-color: #3b3e2a;
 }
 
 .properties-carousel-container {
@@ -342,13 +1091,59 @@
     right: 0;
 }
 
+/* Filtro de búsqueda minimalista */
+.search-section {
+    padding: 32px 0;
+    background: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.search-heading {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.35rem, 2.4vw, 2.2rem);
+    font-weight: 400;
+    color: #38382E;
+    margin-bottom: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.search-compact-form {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.search-compact-form .form-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 6px;
+}
+
+.search-compact-form .form-select,
+.search-compact-form .form-control {
+    border-radius: 8px;
+    padding: 9px 11px;
+    font-size: 0.92rem;
+}
+
+.search-compact-form .btn-search {
+    height: 44px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
 /* Tablets */
 @media (max-width: 991.98px) {
     .hero-carousel,
     .hero-carousel .carousel-item,
     .hero-carousel .carousel-item img {
-        height: 60vh;
-        min-height: 400px;
+        height: 100svh;
+        min-height: 100svh;
     }
     
     .carousel-header {
@@ -373,6 +1168,30 @@
     .properties-carousel-container {
         padding: 0 20px;
     }
+
+    .exclusive-catalog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .service-showcase-title {
+        font-size: 1.35rem;
+    }
+
+    .about-totalliving-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .about-totalliving-copy {
+        padding: 42px 34px;
+    }
+
+    .about-totalliving-visual {
+        padding-top: 0;
+    }
+
+    .why-totalliving-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 /* Móviles */
@@ -380,9 +1199,9 @@
     .hero-carousel,
     .hero-carousel .carousel-item,
     .hero-carousel .carousel-item img {
-        height: 100vh;
-        min-height: 100vh;
-        max-height: 100vh;
+        height: 100svh;
+        min-height: 100svh;
+        max-height: 100svh;
     }
     
     .carousel-overlay {
@@ -410,13 +1229,13 @@
     }
     
     .carousel-content {
-        padding: 25px 20px !important;
+        padding: 18px 14px 60px !important;
         margin-top: auto;
     }
     
     .carousel-content .row {
         margin: 0;
-        gap: 20px;
+        gap: 14px;
     }
     
     .carousel-content .col-lg-8,
@@ -425,18 +1244,19 @@
         margin-bottom: 0;
     }
     
-    .carousel-content .badge {
-        font-size: 0.7rem !important;
-        padding: 6px 14px !important;
-        margin-bottom: 12px !important;
-        display: inline-block;
-        margin-right: 6px !important;
+    .carousel-types .badge {
+        font-size: 0.68rem !important;
+        padding: 5px 10px !important;
+        margin: 0 !important;
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
     }
     
-    .carousel-content h2 {
-        font-size: 1.4rem !important;
-        line-height: 1.3;
-        margin-bottom: 12px !important;
+    .carousel-property-title {
+        font-size: clamp(1.15rem, 5vw, 1.45rem) !important;
+        line-height: 1.25;
+        margin-bottom: 10px !important;
         font-weight: 600 !important;
     }
     
@@ -447,36 +1267,59 @@
         opacity: 0.95;
     }
     
-    .carousel-content .d-flex.gap-4 {
-        gap: 12px !important;
+    .carousel-features {
+        gap: 8px !important;
         flex-wrap: wrap;
-        margin-bottom: 15px !important;
+        margin-bottom: 10px !important;
     }
     
-    .carousel-content .d-flex.gap-4 span {
-        font-size: 0.8rem !important;
+    .carousel-feature-item {
+        font-size: 0.75rem !important;
         background: rgba(255,255,255,0.15);
-        padding: 6px 12px;
+        padding: 5px 8px;
         border-radius: 8px;
     }
+
+    .carousel-feature-item i {
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+    }
     
-    .carousel-content .display-4 {
-        font-size: 2rem !important;
+    .carousel-location {
+        font-size: 0.78rem !important;
+        line-height: 1.35;
+        margin-bottom: 8px !important;
+    }
+
+    .carousel-location i {
+        font-size: 0.85rem !important;
+        margin-right: 2px !important;
+    }
+    
+    .carousel-price-panel {
+        max-width: 100%;
+        text-align: left !important;
+        margin-left: 0;
+    }
+
+    .carousel-price {
+        font-size: clamp(1.2rem, 5vw, 1.6rem) !important;
         line-height: 1.2;
-        margin-bottom: 15px !important;
+        margin-bottom: 10px !important;
         font-weight: 700 !important;
     }
     
-    .carousel-content .btn-lg {
-        padding: 14px 24px !important;
-        font-size: 0.95rem !important;
+    .carousel-cta {
+        padding: 10px 14px !important;
+        font-size: 0.82rem !important;
         width: 100%;
         font-weight: 600 !important;
+        max-width: 100%;
     }
     
     .carousel-content .col-lg-4 {
-        text-align: center !important;
-        margin-top: 20px;
+        text-align: left !important;
+        margin-top: 0;
     }
     
     .carousel-control-prev,
@@ -573,6 +1416,119 @@
         padding: 12px 20px;
         font-size: 1rem;
     }
+
+    .exclusive-catalog-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .services-section-title h2 {
+        letter-spacing: 1.2px;
+    }
+
+    .services-section-title p {
+        font-size: 0.92rem;
+    }
+
+    .service-showcase-card {
+        padding: 22px 18px 18px;
+    }
+
+    .service-showcase-title {
+        font-size: 1.22rem;
+    }
+
+    .why-totalliving-card {
+        min-height: 250px;
+        padding: 18px 18px 16px;
+    }
+
+    .why-totalliving-card h3 {
+        font-size: 1.08rem;
+    }
+
+    .about-totalliving-section {
+        padding: 4px 0 48px;
+    }
+
+    .about-totalliving-copy {
+        padding: 30px 22px;
+    }
+
+    .about-totalliving-title {
+        font-size: 1.7rem;
+    }
+
+    .about-totalliving-text {
+        font-size: 0.95rem;
+        line-height: 1.8;
+    }
+
+    .about-totalliving-actions {
+        gap: 8px;
+    }
+
+    .about-totalliving-social {
+        padding: 7px 10px;
+    }
+
+    .about-totalliving-social-link {
+        width: 32px;
+        height: 32px;
+    }
+
+    .about-totalliving-visual {
+        padding: 0 22px 22px;
+    }
+
+    .about-totalliving-photo-frame,
+    .about-totalliving-photo {
+        min-height: 280px;
+    }
+
+    .why-totalliving-section {
+        padding: 14px 0 50px;
+    }
+
+    .home-listings-section {
+        padding: 20px 0 34px;
+    }
+
+    .home-listings-section .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .home-listings-grid {
+        --bs-gutter-x: 0;
+        --bs-gutter-y: 12px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .home-listings-grid > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    .home-listings-grid .property-card-modern,
+    .home-listings-grid .property-card-image-container,
+    .home-listings-grid .property-card-image {
+        height: 350px !important;
+    }
+
+    .home-listings-grid .property-card-link,
+    .home-listings-grid .property-card-modern {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .why-totalliving-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
 }
 
 /* Móviles pequeños */
@@ -580,8 +1536,8 @@
     .hero-carousel,
     .hero-carousel .carousel-item,
     .hero-carousel .carousel-item img {
-        height: 100vh;
-        min-height: 100vh;
+        height: 100svh;
+        min-height: 100svh;
     }
     
     .carousel-overlay {
@@ -603,7 +1559,7 @@
     }
     
     .carousel-content {
-        padding: 20px 15px !important;
+        padding: 16px 12px 56px !important;
     }
     
     .carousel-content .col-lg-8,
@@ -611,13 +1567,13 @@
         padding: 0;
     }
     
-    .carousel-content .badge {
-        font-size: 0.65rem !important;
-        padding: 5px 12px !important;
+    .carousel-types .badge {
+        font-size: 0.62rem !important;
+        padding: 4px 8px !important;
     }
     
-    .carousel-content h2 {
-        font-size: 1.2rem !important;
+    .carousel-property-title {
+        font-size: clamp(1rem, 4.8vw, 1.25rem) !important;
         margin-bottom: 10px !important;
         font-weight: 600 !important;
     }
@@ -627,38 +1583,33 @@
         margin-bottom: 12px !important;
     }
     
-    .carousel-content .d-flex.gap-4 {
-        gap: 8px !important;
-        margin-bottom: 12px !important;
+    .carousel-features {
+        gap: 6px !important;
+        margin-bottom: 9px !important;
     }
-    
-    .carousel-content .d-flex.gap-4 span {
-        font-size: 0.75rem !important;
-        background: rgba(255,255,255,0.15);
-        padding: 5px 10px;
-        border-radius: 6px;
+
+    .carousel-feature-item {
+        font-size: 0.7rem !important;
+        padding: 4px 7px;
     }
-    
-    .carousel-content .display-4 {
-        font-size: 1.7rem !important;
-        font-weight: 700 !important;
+
+    .carousel-location {
+        font-size: 0.73rem !important;
     }
-    
-    .carousel-content .btn-lg {
-        padding: 12px 20px !important;
-        font-size: 0.9rem !important;
-        width: 100%;
-        font-weight: 600 !important;
+
+    .carousel-price {
+        font-size: clamp(1.1rem, 5vw, 1.4rem) !important;
+        margin-bottom: 8px !important;
+    }
+
+    .carousel-cta {
+        padding: 9px 12px !important;
+        font-size: 0.76rem !important;
     }
     
     .carousel-content .col-lg-4 {
-        text-align: center !important;
-        margin-top: 18px;
-    }
-    
-    .carousel-content .col-lg-4 .display-4 {
-        font-size: 1.5rem !important;
-        margin-bottom: 12px !important;
+        text-align: left !important;
+        margin-top: 0;
     }
     
     .property-carousel-image-container {
@@ -677,6 +1628,64 @@
         padding: 8px 12px;
         font-size: 0.9rem;
     }
+
+    .services-section-title h2 {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+    }
+
+    .service-showcase-head {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .service-showcase-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.05rem;
+    }
+
+    .service-showcase-copy,
+    .service-showcase-list li {
+        font-size: 0.9rem;
+    }
+
+    .why-totalliving-card {
+        min-height: 230px;
+        padding: 14px 14px;
+    }
+
+    .why-totalliving-card h3 {
+        font-size: 0.96rem;
+    }
+
+    .why-totalliving-card p {
+        font-size: 0.88rem;
+        line-height: 1.6;
+    }
+
+    .why-totalliving-list li {
+        font-size: 0.84rem;
+    }
+
+    .about-totalliving-title {
+        font-size: 1.45rem;
+    }
+
+    .about-totalliving-text {
+        font-size: 0.9rem;
+    }
+
+    .home-listings-title {
+        font-size: 1.08rem;
+        letter-spacing: 1px;
+    }
+
+    .home-listings-grid .property-card-modern,
+    .home-listings-grid .property-card-image-container,
+    .home-listings-grid .property-card-image {
+        height: 330px !important;
+    }
 }
 </style>
 {% endblock %}
@@ -687,7 +1696,7 @@
 <section class="hero-carousel-section">
     <!-- Título fijo fuera del carrusel -->
     <div class="carousel-header">
-        <h2>PROPIEDADES DESTACADAS</h2>
+        <h2>{% trans "PROPIEDADES DESTACADAS" %}</h2>
     </div>
     
     <div class="container-fluid px-0">
@@ -725,56 +1734,54 @@
                         <!-- Contenido de la propiedad -->
                         <div class="container carousel-content">
                             <div class="row align-items-end">
-                                <div class="col-lg-8">
-                                    <span class="badge bg-primary mb-3" style="font-size: 1rem; padding: 10px 20px;">
-                                        {{ property.get_property_type_display }}
-                                    </span>
-                                    <span class="badge bg-info mb-3 ms-2" style="font-size: 1rem; padding: 10px 20px;">
-                                        {{ property.get_operation_type_display }}
-                                    </span>
-                                    
-                                    <h2 class="display-5 fw-bold text-white mb-3" style="font-family: 'Montserrat', sans-serif;">{{ property.title }}</h2>
-                                    
-                                    <p class="fs-6 text-white mb-4" style="max-width: 700px; font-family: 'Montserrat', sans-serif;">
-                                        {{ property.description|truncatewords:30 }}
-                                    </p>
-                                    
-                                    <div class="d-flex flex-wrap gap-4 mb-4 text-white" style="font-family: 'Montserrat', sans-serif;">
+                                <div class="col-lg-8 carousel-main-column">
+                                    <div class="carousel-types cinematic-item cinematic-delay-1">
+                                        <span class="badge bg-primary" style="font-size: 1rem; padding: 10px 20px;">
+                                            {{ property.get_property_type_display }}
+                                        </span>
+                                        <span class="badge bg-info" style="font-size: 1rem; padding: 10px 20px;">
+                                            {{ property.get_operation_type_display }}
+                                        </span>
+                                    </div>
+
+                                    <h2 class="display-5 fw-bold text-white mb-3 cinematic-item cinematic-delay-2 carousel-property-title" style="font-family: 'Montserrat', sans-serif;">{{ property.title }}</h2>
+
+                                    <div class="d-flex flex-wrap gap-4 mb-4 text-white cinematic-item cinematic-delay-3 carousel-features" style="font-family: 'Montserrat', sans-serif;">
                                         {% if property.bedrooms > 0 %}
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center carousel-feature-item">
                                             <i class="bi bi-door-open fs-5 me-2"></i>
-                                            <span class="fs-6">{{ property.bedrooms }} Recámaras</span>
+                                            <span class="fs-6">{{ property.bedrooms }} {% trans "Recámaras" %}</span>
                                         </div>
                                         {% endif %}
                                         {% if property.bathrooms > 0 %}
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center carousel-feature-item">
                                             <i class="bi bi-droplet fs-5 me-2"></i>
-                                            <span class="fs-6">{{ property.bathrooms }} Baños</span>
+                                            <span class="fs-6">{{ property.bathrooms }} {% trans "Baños" %}</span>
                                         </div>
                                         {% endif %}
                                         {% if property.area %}
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center carousel-feature-item">
                                             <i class="bi bi-rulers fs-5 me-2"></i>
                                             <span class="fs-6">{{ property.area }} m²</span>
                                         </div>
                                         {% endif %}
                                     </div>
-                                    
-                                    <div class="d-flex align-items-center gap-3 mb-3" style="font-family: 'Montserrat', sans-serif;">
+
+                                    <div class="d-flex align-items-center gap-3 mb-3 cinematic-item cinematic-delay-4 carousel-location" style="font-family: 'Montserrat', sans-serif;">
                                         <i class="bi bi-geo-alt-fill text-white fs-5"></i>
                                         <span class="text-white fs-6">{{ property.city }}, {{ property.state }}</span>
                                     </div>
                                 </div>
                                 
                                 <div class="col-lg-4 text-lg-end">
-                                    <div class="mb-4">
-                                        <div class="display-4 fw-bold" style="color: var(--matte-gold); font-family: 'Montserrat', sans-serif;">
+                                    <div class="mb-4 cinematic-item cinematic-delay-4 carousel-price-panel">
+                                        <div class="display-4 fw-bold carousel-price" style="color: var(--matte-gold); font-family: 'Montserrat', sans-serif;">
                                             {{ property.get_price_display }}
                                         </div>
                                     </div>
-                                    <a href="{% url 'properties:detail' property.pk %}" class="btn btn-lg px-5 py-3" 
+                                    <a href="{% url 'properties:detail' property.pk %}" class="btn btn-lg px-5 py-3 cinematic-item cinematic-delay-5 carousel-cta" 
                                        style="background: var(--matte-gold); color: var(--smoky-black); font-weight: 600; font-size: 1.1rem; font-family: 'Montserrat', sans-serif;">
-                                        <i class="bi bi-eye"></i> Ver Detalles
+                                        <i class="bi bi-eye"></i> {% trans "Ver Detalles" %}
                                     </a>
                                 </div>
                             </div>
@@ -787,268 +1794,325 @@
             <!-- Controles -->
             <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Anterior</span>
+                <span class="visually-hidden">{% trans "Anterior" %}</span>
             </button>
             <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Siguiente</span>
+                <span class="visually-hidden">{% trans "Siguiente" %}</span>
             </button>
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- Buscador de Propiedades -->
-<section class="search-section py-5" style="background: linear-gradient(rgba(59, 62, 42, 0.85), rgba(56, 56, 46, 0.85)), url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1920') center/cover; min-height: 600px; display: flex; align-items: center;">
+<!-- Mapa de Propiedades (solo Home) -->
+<section class="home-properties-map-section">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-4 fw-bold text-white mb-3" style="font-family: 'Montserrat', sans-serif;">
-                Encuentra tu Propiedad Ideal
-            </h2>
+        <div class="home-properties-map-title">
+            <h2>{% trans "Descubre Propiedades en el Mapa" %}</h2>
         </div>
-        
-        <div class="card shadow-lg border-0" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px);">
-            <div class="card-body p-5">
-                <form method="get" action="{% url 'properties:list' %}">
-                    <div class="row g-4">
-                        <!-- Tipo de Propiedad -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-house-door me-2"></i>Tipo de Propiedad</label>
-                            <select name="tipo" class="form-select form-select-lg">
-                                <option value="">Todos</option>
-                                <option value="casa">Casa</option>
-                                <option value="departamento">Departamento</option>
-                                <option value="terreno">Terreno</option>
-                                <option value="local">Local Comercial</option>
-                                <option value="oficina">Oficina</option>
-                                <option value="bodega">Bodega</option>
-                                <option value="rancho">Rancho</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Operación -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-tag me-2"></i>Operación</label>
-                            <select name="operacion" class="form-select form-select-lg">
-                                <option value="">Todas</option>
-                                <option value="venta">Venta</option>
-                                <option value="renta">Renta</option>
-                                <option value="venta_renta">Venta o Renta</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Estado -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-geo-alt me-2"></i>Estado</label>
-                            <div style="position: relative;">
-                                <input type="text" name="estado" id="estado-input" class="form-control form-control-lg autocomplete-input" placeholder="Ej: Querétaro, Ciudad de México" autocomplete="off">
-                                <div id="estado-suggestions" class="autocomplete-suggestions"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Región/Delegación -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-pin-map me-2"></i>Región/Delegación</label>
-                            <div style="position: relative;">
-                                <input type="text" name="region" id="region-input" class="form-control form-control-lg autocomplete-input" placeholder="Selecciona un estado primero" autocomplete="off" disabled>
-                                <div id="region-suggestions" class="autocomplete-suggestions"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Precio Mínimo -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Precio Mínimo</label>
-                            <input type="number" name="precio_min" class="form-control form-control-lg" placeholder="$0">
-                        </div>
-                        
-                        <!-- Precio Máximo -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Precio Máximo</label>
-                            <input type="number" name="precio_max" class="form-control form-control-lg" placeholder="Sin límite">
-                        </div>
-                        
-                        <!-- Recámaras -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold"><i class="bi bi-door-open me-2"></i>Recámaras</label>
-                            <select name="recamaras" class="form-select form-select-lg">
-                                <option value="">Todas</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                                <option value="4">4+</option>
-                                <option value="5">5+</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Baños -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold"><i class="bi bi-droplet me-2"></i>Baños</label>
-                            <select name="banos" class="form-select form-select-lg">
-                                <option value="">Todos</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                                <option value="4">4+</option>
-                                <option value="5">5+</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Estacionamientos -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold"><i class="bi bi-car-front me-2"></i>Estacionamiento</label>
-                            <select name="estacionamiento" class="form-select form-select-lg">
-                                <option value="">Todos</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                                <option value="4">4+</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Niveles -->
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold"><i class="bi bi-layers me-2"></i>Niveles</label>
-                            <select name="niveles" class="form-select form-select-lg">
-                                <option value="">Todos</option>
-                                <option value="1">1+</option>
-                                <option value="2">2+</option>
-                                <option value="3">3+</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Área Total Mínima -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-rulers me-2"></i>Área Total Mín (m²)</label>
-                            <input type="number" name="area_min" class="form-control form-control-lg" step="0.01" placeholder="0" min="0">
-                        </div>
-                        
-                        <!-- Área Total Máxima -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-rulers me-2"></i>Área Total Máx (m²)</label>
-                            <input type="number" name="area_max" class="form-control form-control-lg" step="0.01" placeholder="Sin límite" min="0">
-                        </div>
-                        
-                        <!-- Año Construcción Mínimo -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-calendar me-2"></i>Año Construcción Mín</label>
-                            <input type="number" name="year_built_min" class="form-control form-control-lg" placeholder="1900" min="1900" max="2100">
-                        </div>
-                        
-                        <!-- Año Construcción Máximo -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-calendar me-2"></i>Año Construcción Máx</label>
-                            <input type="number" name="year_built_max" class="form-control form-control-lg" placeholder="2025" min="1900" max="2100">
-                        </div>
-                        
-                        <!-- Cuota Mantenimiento Máxima -->
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold"><i class="bi bi-currency-dollar me-2"></i>Cuota Mantenimiento Máx</label>
-                            <input type="number" name="cuota_mantenimiento_max" class="form-control form-control-lg" step="0.01" placeholder="Sin límite" min="0">
-                        </div>
+        {{ map_markers|json_script:"properties-map-markers" }}
+        <div class="home-properties-map-canvas-wrapper">
+            <div id="home-properties-map-canvas" role="application" aria-label="{% trans 'Mapa de propiedades' %}"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Servicios (se mantiene el bloque de Listings Exclusivos con nuevo enfoque) -->
+<section class="latest-properties-section">
+    <div class="container">
+        <div class="services-section-title">
+            <h2>{% trans "Nuestros servicios" %}</h2>
+            <p>{% trans "Soluciones inmobiliarias diseñadas para acompañarte con estrategia, claridad y resultados reales." %}</p>
+        </div>
+        <div class="exclusive-catalog-grid">
+            <article class="service-showcase-card service-showcase-card--light">
+                <div class="service-showcase-head">
+                    <div class="service-showcase-icon"><i class="bi bi-chat-square-text"></i></div>
+                    <div>
+                        <h3 class="service-showcase-title">{% trans "Asesoría personalizada" %}</h3>
                     </div>
-                    
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3" style="font-family: 'Montserrat', sans-serif; font-size: 1.2rem;">
-                                <i class="bi bi-search"></i> Buscar Propiedades
-                            </button>
-                        </div>
+                </div>
+                <p class="service-showcase-copy">
+                    {% trans "Te acompañamos para comprar, vender o rentar con estrategia clara y atención cercana." %}
+                </p>
+                <ul class="service-showcase-list">
+                    <li>{% trans "Estrategia a la medida." %}</li>
+                    <li>{% trans "Acompañamiento comercial y documental." %}</li>
+                    <li>{% trans "Seguimiento puntual hasta el cierre." %}</li>
+                </ul>
+            </article>
+
+            <article class="service-showcase-card service-showcase-card--accent">
+                <div class="service-showcase-head">
+                    <div class="service-showcase-icon"><i class="bi bi-bar-chart-line"></i></div>
+                    <div>
+                        <h3 class="service-showcase-title">{% trans "Análisis de mercado" %}</h3>
                     </div>
-                </form>
+                </div>
+                <p class="service-showcase-copy">
+                    {% trans "Analizamos tu propiedad y su zona para definir el mejor posicionamiento comercial." %}
+                </p>
+                <ul class="service-showcase-list">
+                    <li>{% trans "Valoración estratégica." %}</li>
+                    <li>{% trans "Lectura de oferta y demanda." %}</li>
+                    <li>{% trans "Recomendaciones para vender mejor." %}</li>
+                </ul>
+            </article>
+
+            <article class="service-showcase-card service-showcase-card--slate">
+                <div class="service-showcase-head">
+                    <div class="service-showcase-icon"><i class="bi bi-house-heart"></i></div>
+                    <div>
+                        <h3 class="service-showcase-title">{% trans "Compra, venta y renta" %}</h3>
+                    </div>
+                </div>
+                <p class="service-showcase-copy">
+                    {% trans "Gestionamos operaciones inmobiliarias con orden, visibilidad y enfoque en resultados." %}
+                </p>
+                <ul class="service-showcase-list">
+                    <li>{% trans "Promoción profesional." %}</li>
+                    <li>{% trans "Filtrado de prospectos y visitas." %}</li>
+                    <li>{% trans "Cierre guiado en cada etapa." %}</li>
+                </ul>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- Quiénes somos -->
+<section class="about-totalliving-section" id="quienes-somos">
+    <div class="container">
+        <div class="about-totalliving-panel">
+            <div class="about-totalliving-copy">
+                <span class="about-totalliving-eyebrow">{% trans "Quiénes somos" %}</span>
+                <h2 class="about-totalliving-title">{% trans "Total Living: Estrategia Real detrás de cada Propiedad" %}</h2>
+                <p class="about-totalliving-text">
+                    {% trans "En Total Living no solo mostramos casas; diseñamos la ruta para que logres tu próxima gran inversión con absoluta certeza. Entendemos que una operación inmobiliaria es uno de los pasos más importantes de tu vida, por eso combinamos tecnología, análisis de mercado y un trato humano para que compres, vendas o rentes con la seguridad de tener a un experto de tu lado." %}
+                </p>
+                <p class="about-totalliving-text">
+                    {% trans "Tu tranquilidad es nuestro mejor cierre." %}
+                </p>
+                <div class="about-totalliving-actions">
+                    <a href="{% url 'contact:contact' %}" class="about-totalliving-cta">
+                        {% trans "Conócenos" %} <i class="bi bi-arrow-right-short"></i>
+                    </a>
+                    <div class="about-totalliving-social" aria-label="{% trans 'Redes sociales de Total Living' %}">
+                        <a href="https://www.facebook.com/total.living.mx?locale=es_LA" class="about-totalliving-social-link" title="Facebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="https://www.instagram.com/total.living.mx/" class="about-totalliving-social-link" title="Instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="https://api.whatsapp.com/send?phone=4428669965&utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGn5X9HFky-Zv0gnldNDivmRN9-X2FfomO9tUzoQ_rdZQkfqDQgClxValyE2Ik_aem_UH-eWIpxjSIDvok7Y1QWmQ" class="about-totalliving-social-link" title="WhatsApp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@total.living.mx" class="about-totalliving-social-link" title="TikTok" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                            <i class="bi bi-tiktok"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-totalliving-visual">
+                <div class="about-totalliving-photo-frame">
+                    <img src="{% static 'images/about-total-living-team.png' %}" alt="{% trans 'Equipo Total Living' %}" class="about-totalliving-photo">
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Últimas Propiedades - Carrusel Estilo C21 -->
-<section class="latest-properties-section">
+<!-- ¿Por qué elegir Total Living? -->
+<section class="why-totalliving-section">
     <div class="container">
-        <div class="latest-properties-title">
-            <h2>TOTAL LIVING LISTINGS EXCLUSIVOS</h2>
+        <div class="why-totalliving-title">
+            <h2>{% trans "¿Por qué elegir Total Living?" %}</h2>
+            <p>{% trans "Trabajamos cada operación con enfoque humano, estrategia inmobiliaria y resultados medibles." %}</p>
         </div>
-        
-        {% if latest_properties %}
-        <div class="properties-carousel-container">
-            <div class="swiper propertiesSwiper">
-                <div class="swiper-wrapper properties-swiper">
-                    {% for property in latest_properties %}
-                    <div class="swiper-slide">
-                        <div class="property-carousel-card">
-                            <div class="property-carousel-image-container">
-                                {% with main_image=property.get_main_image %}
-                                {% if main_image %}
-                                <img src="{{ main_image.image.url }}" alt="{{ property.title }}" class="property-carousel-image" loading="eager" fetchpriority="high">
-                                {% else %}
-                                <div class="property-carousel-image" style="background: linear-gradient(135deg, #40452E 0%, #2d3120 100%); display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-building" style="font-size: 5rem; color: rgba(255,255,255,0.3);"></i>
-                                </div>
-                                {% endif %}
-                                {% endwith %}
-                                
-                                <div class="property-price-banner">
-                                    {{ property.get_price_display }}
-                                </div>
-                                
-                                <div class="property-name-overlay">
-                                    <h3>{{ property.title }}</h3>
-                                </div>
-                            </div>
-                            
-                            <div class="property-carousel-info">
-                                <div class="property-location-info">
-                                    <i class="bi bi-geo-alt-fill"></i>
-                                    <span>{{ property.city }}, {{ property.state }}</span>
-                                </div>
-                                
-                                <div class="property-details-info">
-                                    {% if property.bedrooms > 0 %}
-                                    <span>
-                                        <i class="bi bi-door-open"></i>
-                                        {{ property.bedrooms }} RE
-                                    </span>
-                                    {% endif %}
-                                    {% if property.bathrooms > 0 %}
-                                    <span>
-                                        <i class="bi bi-droplet"></i>
-                                        {{ property.bathrooms }} BA
-                                    </span>
-                                    {% endif %}
-                                </div>
-                                
-                                <a href="{% url 'properties:detail' property.pk %}" class="property-carousel-button">
-                                    Más información
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
+
+        <div class="why-totalliving-grid">
+            <article class="why-totalliving-card">
+                <div class="why-totalliving-icon"><i class="bi bi-shield-lock"></i></div>
+                <h3>{% trans "Seguridad Legal y Patrimonial" %}</h3>
+                <p>{% trans "Tu tranquilidad es nuestra prioridad absoluta." %}</p>
+                <ul class="why-totalliving-list">
+                    <li>{% trans "Validacion de documentos ante notario." %}</li>
+                    <li>{% trans "Contratos blindados y personalizados." %}</li>
+                    <li>{% trans "Filtro de prospectos." %}</li>
+                    <li>{% trans "Gestion de pagos segura y transparente." %}</li>
+                </ul>
+            </article>
+            <article class="why-totalliving-card">
+                <div class="why-totalliving-icon"><i class="bi bi-megaphone"></i></div>
+                <h3>{% trans "Marketing Premium" %}</h3>
+                <p>{% trans "Hacemos que tu propiedad destaque del resto." %}</p>
+                <ul class="why-totalliving-list">
+                    <li>{% trans "Fotografia y video de alta calidad." %}</li>
+                    <li>{% trans "Publicidad segmentada en Facebook e Instagram." %}</li>
+                    <li>{% trans "Posicionamiento VIP en portales." %}</li>
+                    <li>{% trans "Recorridos virtuales para filtrar visitas reales." %}</li>
+                </ul>
+            </article>
+            <article class="why-totalliving-card">
+                <div class="why-totalliving-icon"><i class="bi bi-bar-chart-line"></i></div>
+                <h3>{% trans "Inteligencia de Mercado" %}</h3>
+                <p>{% trans "Vendemos al precio justo, sin perder tiempo." %}</p>
+                <ul class="why-totalliving-list">
+                    <li>{% trans "Analisis comparativo de mercado (ACM)." %}</li>
+                    <li>{% trans "Reportes mensuales de visitas e interesados." %}</li>
+                    <li>{% trans "Estrategia de precios basada en datos reales." %}</li>
+                    <li>{% trans "Asesoria en preventas e inversiones." %}</li>
+                </ul>
+            </article>
+            <article class="why-totalliving-card">
+                <div class="why-totalliving-icon"><i class="bi bi-patch-check-fill"></i></div>
+                <h3>{% trans "Negociación y Cierre" %}</h3>
+                <p>{% trans "Expertos en obtener las mejores condiciones para ti." %}</p>
+                <ul class="why-totalliving-list">
+                    <li>{% trans "Cierre acelerado de operaciones." %}</li>
+                    <li>{% trans "Mediacion profesional entre ambas partes." %}</li>
+                    <li>{% trans "Gestion de creditos." %}</li>
+                    <li>{% trans "Acompañamiento total hasta la firma." %}</li>
+                </ul>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- Conoce propiedades en Total Living -->
+<section class="home-listings-section">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="home-listings-title">{% trans "CONOCE PROPIEDADES EN TOTAL LIVING" %}</h2>
+        </div>
+
+        <div class="row g-4 home-listings-grid">
+            {% for property in latest_properties|slice:":3" %}
+            <div class="col-md-6 col-lg-4">
+                {% include 'properties/property_card.html' with property=property %}
             </div>
+            {% endfor %}
         </div>
-        
-        <div class="text-center mt-5">
+
+        <div class="text-center home-listings-cta">
             <a href="{% url 'properties:list' %}" class="btn btn-primary btn-lg px-5">
-                <i class="bi bi-grid-3x3-gap"></i> Ver Todas las Propiedades
+                <i class="bi bi-grid-3x3-gap"></i> {% trans "Ver Todas las Propiedades" %}
             </a>
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="bi bi-inbox" style="font-size: 5rem; color: #ccc;"></i>
-            <h3 class="mt-3">No hay propiedades disponibles</h3>
-        </div>
-        {% endif %}
     </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 // Auto-play del carrusel con pausa al hover
 document.addEventListener('DOMContentLoaded', function() {
+    // Navbar inmersiva en home: aparece al hacer scroll
+    document.body.classList.add('home-immersive');
+    let topMouseActive = false;
+    let navInteractionActive = false;
+    const navbarEl = document.querySelector('.navbar');
+
+    // Mapa Leaflet en Home
+    if (typeof L !== 'undefined') {
+        const mapCanvasEl = document.getElementById('home-properties-map-canvas');
+        if (mapCanvasEl) {
+            const markersEl = document.getElementById('properties-map-markers');
+            const raw = markersEl ? markersEl.textContent : '[]';
+            let markers = [];
+            try {
+                markers = JSON.parse(raw);
+            } catch (e) {
+                markers = [];
+            }
+
+            // Vista inicial fija para mostrar la mayor parte de Mexico
+            var map = L.map('home-properties-map-canvas').setView([23.7, -102.5], 5);
+            L.tileLayer('{{ MAP_TILES.url|escapejs }}', {
+                attribution: '{{ MAP_TILES.attribution|escapejs }}',
+                subdomains: '{{ MAP_TILES.subdomains|escapejs }}',
+                maxNativeZoom: 16,
+                maxZoom: 18
+            }).addTo(map);
+
+            function esc(s) {
+                if (s == null) return '';
+                return String(s)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            }
+
+            markers.forEach(function (m) {
+                if (m.lat == null || m.lng == null) return;
+                var ll = [m.lat, m.lng];
+                var popup = '<div style="min-width:200px;"><strong>' + esc(m.title) + '</strong><br>' +
+                    esc(m.price) + '<br><a href="' + esc(m.url) + '">{% trans "Ver ficha" %}</a></div>';
+                L.marker(ll).addTo(map).bindPopup(popup);
+            });
+
+            setTimeout(function () { map.invalidateSize(); }, 300);
+        }
+    }
+
+    const updateHomeNav = () => {
+        const mobileMenuOpen = !!document.querySelector('.navbar-collapse.show');
+        if (window.scrollY > 30 || topMouseActive || navInteractionActive || mobileMenuOpen) {
+            document.body.classList.add('home-nav-visible');
+        } else {
+            document.body.classList.remove('home-nav-visible');
+        }
+    };
+    updateHomeNav();
+    window.addEventListener('scroll', updateHomeNav, { passive: true });
+
+    // Mostrar navbar al acercar el cursor a la parte superior
+    document.addEventListener('mousemove', function(e) {
+        const wasActive = topMouseActive;
+        topMouseActive = e.clientY <= 70;
+        if (wasActive !== topMouseActive) {
+            updateHomeNav();
+        }
+    });
+
+    document.addEventListener('mouseleave', function() {
+        if (topMouseActive) {
+            topMouseActive = false;
+            updateHomeNav();
+        }
+    });
+
+    if (navbarEl) {
+        navbarEl.addEventListener('mouseenter', function() {
+            navInteractionActive = true;
+            updateHomeNav();
+        });
+
+        navbarEl.addEventListener('mouseleave', function() {
+            navInteractionActive = false;
+            updateHomeNav();
+        });
+
+        navbarEl.addEventListener('shown.bs.dropdown', function() {
+            navInteractionActive = true;
+            updateHomeNav();
+        });
+
+        navbarEl.addEventListener('hidden.bs.dropdown', function() {
+            navInteractionActive = navbarEl.matches(':hover');
+            updateHomeNav();
+        });
+
+        const navbarCollapse = navbarEl.querySelector('.navbar-collapse');
+        if (navbarCollapse) {
+            navbarCollapse.addEventListener('shown.bs.collapse', updateHomeNav);
+            navbarCollapse.addEventListener('hidden.bs.collapse', updateHomeNav);
+        }
+    }
+
     var carousel = document.getElementById('featuredCarousel');
     if (carousel) {
         var bsCarousel = new bootstrap.Carousel(carousel, {
@@ -1057,35 +2121,34 @@ document.addEventListener('DOMContentLoaded', function() {
             pause: 'hover'
         });
     }
+
+    const whyCards = document.querySelectorAll('.why-totalliving-card');
+    if (whyCards.length) {
+        const isMobileOrTablet = window.matchMedia('(max-width: 991.98px)').matches;
+
+        whyCards.forEach((card, index) => {
+            card.classList.add(index % 2 === 0 ? 'reveal-left' : 'reveal-right');
+            if (!isMobileOrTablet) {
+                card.style.transitionDelay = `${index * 80}ms`;
+            } else {
+                card.style.transitionDelay = `${index * 40}ms`;
+            }
+        });
+
+        const revealWhyCards = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            });
+        }, {
+            threshold: 0.01,
+            rootMargin: isMobileOrTablet ? '0px 0px -5% 0px' : '0px 0px -10% 0px'
+        });
+
+        whyCards.forEach((card) => revealWhyCards.observe(card));
+    }
     
-    // Carrusel de Últimas Propiedades
-    const propertiesSwiper = new Swiper('.propertiesSwiper', {
-        slidesPerView: 1,
-        spaceBetween: 30,
-        loop: true,
-        autoplay: {
-            delay: 5000,
-            disableOnInteraction: false,
-        },
-        navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev',
-        },
-        breakpoints: {
-            640: {
-                slidesPerView: 2,
-                spaceBetween: 20,
-            },
-            768: {
-                slidesPerView: 2,
-                spaceBetween: 30,
-            },
-            1024: {
-                slidesPerView: 3,
-                spaceBetween: 30,
-            },
-        },
-    });
 });
 </script>
 {% endblock %}
