@@ -3,6 +3,7 @@ Configuración para entorno de producción (AWS)
 """
 from .base import *
 from decouple import config
+import os
 from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 
@@ -10,6 +11,15 @@ DEBUG = False
 
 ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='').split(',') if h.strip()]
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if o.strip()]
+
+# Auto-soporte para Render: evita 400 por host no permitido.
+render_host = (os.getenv('RENDER_EXTERNAL_HOSTNAME') or '').strip()
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)
+if render_host:
+    render_origin = f'https://{render_host}'
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 if not ALLOWED_HOSTS:
     raise ValueError('ALLOWED_HOSTS debe configurarse en producción.')
