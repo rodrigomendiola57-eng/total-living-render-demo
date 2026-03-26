@@ -7,7 +7,8 @@ services:
     buildCommand: >
       pip install -r requirements.txt &&
       python manage.py migrate --noinput &&
-      python manage.py collectstatic --noinput
+      python manage.py collectstatic --noinput &&
+      python manage.py loaddata data_demo.json || true
     startCommand: gunicorn total_living.wsgi:application --log-file -
     envVars:
       - key: ENVIRONMENT
