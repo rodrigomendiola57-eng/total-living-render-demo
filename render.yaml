@@ -6,9 +6,9 @@ services:
     autoDeploy: true
     buildCommand: >
       pip install -r requirements.txt &&
+      python manage.py migrate --noinput &&
       python manage.py collectstatic --noinput
     startCommand: gunicorn total_living.wsgi:application --log-file -
-    postDeployCommand: python manage.py migrate --noinput
     envVars:
       - key: ENVIRONMENT
         value: production
